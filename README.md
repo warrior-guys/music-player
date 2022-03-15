@@ -15,4 +15,4 @@ You can either clone the repository into your system, or we will add a ```.exe``
 ##### License - GNU GPL-3.0
 TL;DR - You can use our project for almost anything you want, except distributing closed-source projects.
 
-[https://img.shields.io/github/issues/warrior-guys/musical-memory?style=for-the-badge][https://img.shields.io/github/forks/warrior-guys/musical-memory?style=for-the-badge][https://img.shields.io/github/license/warrior-guys/musical-memory?style=for-the-badge]
+[https://img.shields.io/github/issues/warrior-guys/musical-memory?style=for-the-badge] [https://img.shields.io/github/forks/warrior-guys/musical-memory?style=for-the-badge] [https://img.shields.io/github/license/warrior-guys/musical-memory?style=for-the-badge]
