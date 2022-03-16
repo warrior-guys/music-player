@@ -2,6 +2,7 @@
 
 ### Description
 This is an advanced music player for one's needs, elevated from legacy players like VLC and Windows Media Player with a beautiful GUI, built from scratch with Python, using ```Tkinter``` library for GUI, the ```OS``` library for file controls and ```Pygame``` library for media controls.
+>**Currently the program only supports .mp3 files, and we are not willing to add other file extensions any soon.**
 
 ### How to install?
 You can either clone the repository into your system, or we will add a ```.exe``` file in the future when the project will be complete.
