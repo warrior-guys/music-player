@@ -10,7 +10,7 @@ You can either clone the repository into your system, or we will add a ```.exe``
 ### Credits to team members:
 1. [Aayush Shukla](https://github.com/AayushShukla2006)
 2. [Ritesh Kumar Karn](https://github.com/riteshkumarkarn)
-3. [Shivam Kumar](https://github.com/Shiva-s
+3. [Shivam Kumar](https://github.com/Shiva-slbs)
 4. [Prithvi Raj](https://github.com/PRITHVIRAJ54)
 
 ### License - GNU GPL-3.0
