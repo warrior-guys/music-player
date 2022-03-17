@@ -1,6 +1,10 @@
+#pause button attribution - <a href="https://www.flaticon.com/free-icons/pause" title="pause icons">Pause icons created by Good Ware - Flaticon
+#play button attribution - <a href="https://www.flaticon.com/free-icons/play-button" title="play button icons">Play button icons created by Freepik - Flaticon
+
 import os
 from tkinter import *
 from tkinter import font as tkFont
+from tkinter import filedialog
 import pygame
 from PIL import Image, ImageTk
 import functools
@@ -51,8 +55,11 @@ listbox = Listbox(listframel, xscrollcommand=scrollbar2.set, yscrollcommand=scro
 listbox.pack(fill=BOTH, expand=1)
 song_name = ""
 
+path = ""
+
 def browse():
-    pass
+    global path
+    path = filedialog.askdirectory(initialdir="E:\\",title="Select a directory")
 
 def fileSelection(self):
     global song_index, changed_song
