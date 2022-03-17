@@ -5,12 +5,12 @@ This is an advanced music player for one's needs, elevated from legacy players l
 >**Currently the program only supports .mp3 files, and we are not willing to add other file extensions any soon.**
 
 ### How to install?
-You can either clone the repository into your system, or we will add a ```.exe``` file in the future when the project will be complete.
+You can either clone the repository into your system, or we will add a ```.exe``` & ```.dev```file in the future when the project will be complete.
 
 ### Credits to team members:
 1. [Aayush Shukla](https://github.com/AayushShukla2006)
 2. [Ritesh Kumar Karn](https://github.com/riteshkumarkarn)
-3. [Shivam Kumar](https://github.com/Shiva-slbs)
+3. [Shivam Kumar](https://github.com/Shiva-s
 4. [Prithvi Raj](https://github.com/PRITHVIRAJ54)
 
 ### License - GNU GPL-3.0
