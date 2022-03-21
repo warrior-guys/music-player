@@ -17,7 +17,7 @@ root.grid_columnconfigure((3,), weight=15)
 root.resizable(False, False)
 root.configure(bg="black")
 root.option_add('*Dialog.msg.font', 'Conforta 11')
-root.iconbitmap('appicon.ico')
+root.iconbitmap('icons/appicon.ico')
 pygame.init()
 pygame.mixer.init()
 
@@ -42,10 +42,10 @@ listframel.grid_columnconfigure((0,), weight=1)
 listframer.grid_rowconfigure((0,1,2,3,4), weight=1)
 listframer.grid_columnconfigure((1,), weight=1)
 
-play_img = ImageTk.PhotoImage(Image.open('play.png').resize((50,50)))
-pause_img = ImageTk.PhotoImage(Image.open('pause.png').resize((50,50)))
-previous_img = ImageTk.PhotoImage(Image.open('previous.png').resize((40,40)))
-next_img = ImageTk.PhotoImage(Image.open('next.png').resize((40,40)))
+play_img = ImageTk.PhotoImage(Image.open('icons/play.png').resize((50,50)))
+pause_img = ImageTk.PhotoImage(Image.open('icons/pause.png').resize((50,50)))
+previous_img = ImageTk.PhotoImage(Image.open('icons/previous.png').resize((40,40)))
+next_img = ImageTk.PhotoImage(Image.open('icons/next.png').resize((40,40)))
 
 played_song = 0
 song_index = 0
