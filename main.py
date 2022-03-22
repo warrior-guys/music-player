@@ -118,6 +118,8 @@ def fileSelection(self):
     
 listbox.bind("<<ListboxSelect>>", fileSelection)
 
+pygame.mixer.music.set_volume(0.2)
+
 def play_song():
     global played_song, changed_song, song_index, pth
 
@@ -194,15 +196,19 @@ def next_song():
         song_index += 1
         pygame.mixer.music.pause()
         play_song()
+   
+
+cur_vol = pygame.mixer.music.get_volume()
 
 def ivol():
-    pass
+    pygame.mixer.music.set_volume(cur_vol+0.05)
 
 def dvol():
-    pass
+    pygame.mixer.music.set_volume(cur_vol-0.05)
 
 def mvol():
-    pass
+    pygame.mixer.music.set_volume(0.0)
+
 
 def ahelp():
     pass
