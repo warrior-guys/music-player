@@ -224,8 +224,18 @@ play.grid(row=5, column=1)
 
 previous = Button(root, image=previous_img, command=previous_song, borderwidth=0, bg="black")
 previous.grid(row=5, column=0)
+
 nexts = Button(root, image=next_img, command=next_song, borderwidth=0, bg="black")
 nexts.grid(row=5, column=2)
+
+vol_up = Button(root, text="volume up", command=ivol, borderwidth=0, bg="yellow")
+vol_up.grid(row=6,column=2)
+
+vol_Down = Button(root, text="volume Down", command=dvol, borderwidth=0, bg="yellow")
+vol_Down.grid(row=6,column=1)
+
+vol_mute = Button(root, text="Mute", command=mvol, borderwidth=0, bg="yellow")
+vol_mute.grid(row=6,column=0)
 
 for i in range(len(lst)):
     lg = lst[i]
