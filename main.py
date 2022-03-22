@@ -201,10 +201,10 @@ def next_song():
 cur_vol = pygame.mixer.music.get_volume()
 
 def ivol():
-    pygame.mixer.music.set_volume(cur_vol+0.05)
+    pygame.mixer.music.set_volume(cur_vol+0.1)
 
 def dvol():
-    pygame.mixer.music.set_volume(cur_vol-0.05)
+    pygame.mixer.music.set_volume(cur_vol-0.1)
 
 def mvol():
     pygame.mixer.music.set_volume(0.0)
