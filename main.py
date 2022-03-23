@@ -1,12 +1,13 @@
+from concurrent.futures import thread
 import os
-from tkinter import *
-from tkinter import font as tkFont
-from tkinter import filedialog, messagebox
-from tkinter.ttk import Scale
 import pygame
-from PIL import Image, ImageTk
 import functools
-from math import floor
+from tkinter import *
+from tkinter import filedialog, messagebox
+from tkinter import font as tkFont
+from tkinter.ttk import Scale
+from PIL import Image, ImageTk
+from mutagen.mp3 import MP3
 
 root = Tk()
 root.geometry('1280x720')
@@ -15,9 +16,9 @@ root.grid_rowconfigure((0,1,2,3,4,5), weight=1)
 root.grid_columnconfigure((0,1,2), weight=1)
 root.grid_columnconfigure((3,), weight=15)
 root.resizable(False, False)
-root.configure(bg="black")
 root.option_add('*Dialog.msg.font', 'Conforta 11')
-root.iconbitmap('icons/appicon.ico')
+root.iconbitmap('appicon.ico')
+pygame.mixer.pre_init()
 pygame.init()
 pygame.mixer.init()
 
@@ -42,14 +43,19 @@ listframel.grid_columnconfigure((0,), weight=1)
 listframer.grid_rowconfigure((0,1,2,3,4), weight=1)
 listframer.grid_columnconfigure((1,), weight=1)
 
-play_img = ImageTk.PhotoImage(Image.open('icons/play.png').resize((50,50)))
-pause_img = ImageTk.PhotoImage(Image.open('icons/pause.png').resize((50,50)))
-previous_img = ImageTk.PhotoImage(Image.open('icons/previous.png').resize((40,40)))
-next_img = ImageTk.PhotoImage(Image.open('icons/next.png').resize((40,40)))
+play_img = ImageTk.PhotoImage(Image.open('play.png').resize((50,50)))
+pause_img = ImageTk.PhotoImage(Image.open('pause.png').resize((50,50)))
+previous_img = ImageTk.PhotoImage(Image.open('previous.png').resize((35,35)))
+next_img = ImageTk.PhotoImage(Image.open('next.png').resize((35,35)))
+up_img = ImageTk.PhotoImage(Image.open('up.png').resize((35,35)))
+down_img = ImageTk.PhotoImage(Image.open('down.png').resize((35,35)))
+mute_img = ImageTk.PhotoImage(Image.open('mute.png').resize((35,35)))
+unmute_img = ImageTk.PhotoImage(Image.open('sound.png').resize((35,35)))
 
 played_song = 0
 song_index = 0
 changed_song = 0
+dir_changed = False
 
 scrollbar = Scrollbar(listframel)
 scrollbar.pack(side=RIGHT, fill=Y)
@@ -61,29 +67,29 @@ listbox = Listbox(listframel, xscrollcommand=scrollbar2.set, yscrollcommand=scro
 listbox.pack(fill=BOTH, expand=1)
 song_name = ""
 
-def slider_changed(event):
-    global current_value
-
-    print(floor(current_value.get()))
-
 listframed = Frame(root)
 listframed.grid(row=5, column=1, sticky='NSEW')
-listframed.configure(bg='black')
 
 current_value = DoubleVar()
-slider = Scale(root, from_=0, to=100, orient='horizontal', command=slider_changed, variable=current_value)
+slider = Scale(root, from_=0, to=100, orient='horizontal', variable=current_value)
 slider.grid(row=5, column=3, sticky='we')
 
 pth = os.getcwd()
 ap = "Autoplay: On"
+clicked_mute = False
 l = True
+initial_vol = 1.0
+tpath = pth + "/" + lst[song_index]
+val = 0.1
 
 def browse():
-    global pth, song_list, lst, listbox, pth
+    global pth, song_list, lst, listbox, dir_changed
     temp = pth
     try:
         pth = filedialog.askdirectory(initialdir=os.getcwd(),title="Select a folder")
         song_list = os.listdir(pth)
+        dir_changed = True
+        pygame.mixer.music.stop()
     except FileNotFoundError:
         pth = temp
         song_list = os.listdir(pth)
@@ -108,7 +114,7 @@ def tgautoplay():
         l = True
 
 def fileSelection(self):
-    global song_index, changed_song, pth
+    global song_index, changed_song, pth, tpath
 
     s = song_index
     selection = listbox.curselection()
@@ -118,13 +124,10 @@ def fileSelection(self):
     
 listbox.bind("<<ListboxSelect>>", fileSelection)
 
-pygame.mixer.music.set_volume(0.2)
-
 def play_song():
-    global played_song, changed_song, song_index, pth
+    global played_song, changed_song, song_index, pth, tpath
 
     tpath = pth + "/"  + lst[song_index]
-    print("Tpath: ", tpath)
 
     if pygame.mixer.music.get_busy():
         pygame.mixer.music.pause()
@@ -140,7 +143,6 @@ def play_song():
                 pygame.mixer.music.unpause()
             elif changed_song == 1:
                 path = pth + "/"  + lst[song_index]
-                print("Path: ",path)
                 if path == tpath:
                     pygame.mixer.music.load(str(path))
                     pygame.mixer.music.play()
@@ -151,22 +153,34 @@ def play_song():
                     changed_song = 0
         play.config(image=pause_img)
 
-def change_song():
-    global changed_song, song_index
-
+def new_thread():
+    global changed_song, song_index, tpath, current_value, dir_changed, val
+    
     for event in pygame.event.get():
         if event.type == MUSIC_END:
             if song_index == len(lst) - 1:
                 play.config(image=play_img)
             else:
-                if l:
+                if dir_changed:
                     changed_song = 1
-                    song_index += 1
                     play_song()
+                    dir_changed = False
                 else:
-                    play.config(image=play_img)
+                    if l:
+                        changed_song = 1
+                        song_index += 1
+                        play_song()
+                    else:
+                        play.config(image=play_img)
 
-    root.after(100, change_song)
+    
+    song_mut = MP3(tpath)
+    song_length = song_mut.info.length
+    current_time = pygame.mixer.music.get_pos()  / 1000
+    slider_val = (current_time / song_length) * 100
+    current_value.set(slider_val)
+
+    root.after(100, new_thread)
 
 def cquit():
     mb = messagebox.askyesno('QUITTING', 'Are you sure you want to quit the application?')
@@ -180,7 +194,7 @@ def previous_song():
     global changed_song, song_index, lst
 
     if song_index == 0:
-        messagebox.showerror("Error", "You are on the first song")
+        messagebox.showerror("Error", "This is the first song")
     else:
         changed_song = 1
         song_index -= 1
@@ -189,26 +203,45 @@ def previous_song():
 
 def next_song():
     global changed_song, song_index, lst
+    
     if song_index == len(lst) - 1:
-        messagebox.showerror("Error", "You are on the last song")
+        messagebox.showerror("Error", "This is the last song")
     else:
         changed_song = 1
         song_index += 1
         pygame.mixer.music.pause()
         play_song()
-   
-
-cur_vol = pygame.mixer.music.get_volume()
 
 def ivol():
-    pygame.mixer.music.set_volume(cur_vol+0.1)
+    global initial_vol
+
+    if initial_vol > 0.95:
+        pass
+    else:
+        pygame.mixer.music.set_volume(initial_vol+0.05)
+        initial_vol += 0.05
 
 def dvol():
-    pygame.mixer.music.set_volume(cur_vol-0.1)
+    global initial_vol
+
+    if initial_vol < 0.05:
+        initial_vol = 0.0
+        pass
+    else:    
+        pygame.mixer.music.set_volume(initial_vol-0.05)
+        initial_vol -= 0.05
 
 def mvol():
-    pygame.mixer.music.set_volume(0.0)
+    global clicked_mute, initial_vol
 
+    if clicked_mute:
+        pygame.mixer.music.set_volume(initial_vol)
+        vol_mute.config(image=unmute_img)
+        clicked_mute = False
+    else:
+        pygame.mixer.music.set_volume(0.0)
+        vol_mute.config(image=mute_img)
+        clicked_mute = True
 
 def ahelp():
     pass
@@ -216,31 +249,30 @@ def ahelp():
 def about():
     pass
 
-MUSIC_END = pygame.USEREVENT+1
+MUSIC_END = pygame.USEREVENT + 1
 pygame.mixer.music.set_endevent(MUSIC_END)
 
-play = Button(root, image=play_img, command=play_song, borderwidth=0, bg="black")
+play = Button(root, image=play_img, command=play_song, borderwidth=0)
 play.grid(row=5, column=1)
 
-previous = Button(root, image=previous_img, command=previous_song, borderwidth=0, bg="black")
+previous = Button(root, image=previous_img, command=previous_song, borderwidth=0)
 previous.grid(row=5, column=0)
-
-nexts = Button(root, image=next_img, command=next_song, borderwidth=0, bg="black")
+nexts = Button(root, image=next_img, command=next_song, borderwidth=0)
 nexts.grid(row=5, column=2)
-
-vol_up = Button(root, text="volume up", command=ivol, borderwidth=0, bg="yellow")
-vol_up.grid(row=6,column=2)
-
-vol_Down = Button(root, text="volume Down", command=dvol, borderwidth=0, bg="yellow")
-vol_Down.grid(row=6,column=1)
-
-vol_mute = Button(root, text="Mute", command=mvol, borderwidth=0, bg="yellow")
-vol_mute.grid(row=6,column=0)
 
 for i in range(len(lst)):
     lg = lst[i]
     lgl = len(lg)
     listbox.insert(i+1, lg[:lgl - 4])
+
+vol_up = Button(root, command=ivol, borderwidth=0, image=up_img)
+vol_up.grid(row=6,column=2)
+
+vol_down = Button(root, command=dvol, borderwidth=0, image=down_img)
+vol_down.grid(row=6,column=1)
+
+vol_mute = Button(root, command=mvol, borderwidth=0, image=unmute_img)
+vol_mute.grid(row=6,column=0)
 
 menu = Menu(root)
 filemenu = Menu(menu, tearoff=0)
@@ -263,6 +295,6 @@ menu.add_cascade(label="Help", menu=helpmenu)
 scrollbar.config(command=listbox.yview)
 scrollbar2.config(command=listbox.xview)
 root.config(menu=menu)
-change_song()
 root.protocol("WM_DELETE_WINDOW", cquit)
+new_thread()
 root.mainloop()
