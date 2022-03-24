@@ -9,4 +9,4 @@
 
 ## Reporting a Vulnerability
 
-You can open an ![issue](https://github.com/warrior-guys/musical-memory/issues) to report any vulnerability, and we will look into it as soon as possible.
+You can open an [issue](https://github.com/warrior-guys/musical-memory/issues) to report any vulnerability, and we will look into it as soon as possible.
