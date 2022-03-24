@@ -358,6 +358,14 @@ def nsymbol(args):
                 args.set(toset)
     if len(args.get()) > 2 : args.set(args.get()[:2])
 
+
+root.bind("<space>" , lambda event : play_song() )
+root.bind("<Control-Shift-Right>" , lambda event : next_song() )
+root.bind("<Control-Shift-Left>" , lambda event : previous_song() )
+root.bind("<Control-Shift-Up>" , lambda event : ivol() )
+root.bind("<Control-Shift-Down>" , lambda event : dvol() )
+root.bind("<Control-Shift-Downm>" , lambda event : mvol() )
+
 MUSIC_END = pygame.USEREVENT + 1
 pygame.mixer.music.set_endevent(MUSIC_END)
 
