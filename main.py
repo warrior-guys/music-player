@@ -1,4 +1,3 @@
-from concurrent.futures import thread
 import os
 import pygame
 import functools
@@ -8,6 +7,7 @@ from tkinter import font as tkFont
 from tkinter.ttk import Scale
 from PIL import Image, ImageTk
 from mutagen.mp3 import MP3
+from math import floor
 
 root = Tk()
 root.geometry('1280x720')
@@ -16,7 +16,7 @@ root.grid_rowconfigure((0,1,2,3,4,5), weight=1)
 root.grid_columnconfigure((0,1,2), weight=1)
 root.grid_columnconfigure((3,), weight=15)
 root.resizable(False, False)
-root.option_add('*Dialog.msg.font', 'Conforta 11')
+root.option_add('*Dialog.msg.font', 'conforta 11')
 root.iconbitmap('appicon.ico')
 pygame.mixer.pre_init()
 pygame.init()
@@ -43,14 +43,14 @@ listframel.grid_columnconfigure((0,), weight=1)
 listframer.grid_rowconfigure((0,1,2,3,4), weight=1)
 listframer.grid_columnconfigure((1,), weight=1)
 
-play_img = ImageTk.PhotoImage(Image.open('play.png').resize((50,50)))
-pause_img = ImageTk.PhotoImage(Image.open('pause.png').resize((50,50)))
-previous_img = ImageTk.PhotoImage(Image.open('previous.png').resize((35,35)))
-next_img = ImageTk.PhotoImage(Image.open('next.png').resize((35,35)))
-up_img = ImageTk.PhotoImage(Image.open('up.png').resize((35,35)))
-down_img = ImageTk.PhotoImage(Image.open('down.png').resize((35,35)))
-mute_img = ImageTk.PhotoImage(Image.open('mute.png').resize((35,35)))
-unmute_img = ImageTk.PhotoImage(Image.open('sound.png').resize((35,35)))
+play_img = ImageTk.PhotoImage(Image.open('icons/play.png').resize((50,50)))
+pause_img = ImageTk.PhotoImage(Image.open('icons/pause.png').resize((50,50)))
+previous_img = ImageTk.PhotoImage(Image.open('icons/previous.png').resize((35,35)))
+next_img = ImageTk.PhotoImage(Image.open('icons/next.png').resize((35,35)))
+up_img = ImageTk.PhotoImage(Image.open('icons/up.png').resize((35,35)))
+down_img = ImageTk.PhotoImage(Image.open('icons/down.png').resize((35,35)))
+mute_img = ImageTk.PhotoImage(Image.open('icons/mute.png').resize((35,35)))
+unmute_img = ImageTk.PhotoImage(Image.open('icons/sound.png').resize((35,35)))
 
 played_song = 0
 song_index = 0
@@ -81,6 +81,11 @@ l = True
 initial_vol = 1.0
 tpath = pth + "/" + lst[song_index]
 val = 0.1
+minute = StringVar()
+second = StringVar()
+song_dur = 0.0
+mini_seek = Toplevel(root)
+mini_seek.destroy()
 
 def browse():
     global pth, song_list, lst, listbox, dir_changed
@@ -125,7 +130,7 @@ def fileSelection(self):
 listbox.bind("<<ListboxSelect>>", fileSelection)
 
 def play_song():
-    global played_song, changed_song, song_index, pth, tpath
+    global played_song, changed_song, song_index, pth, tpath, song_dur
 
     tpath = pth + "/"  + lst[song_index]
 
@@ -136,7 +141,8 @@ def play_song():
         if played_song == 0:
             path = pth + "/" + lst[song_index]
             pygame.mixer.music.load(str(path))
-            pygame.mixer.music.play()  
+            pygame.mixer.music.play()
+            song_dur = 0
             played_song = 1
         elif played_song == 1:
             if changed_song == 0:
@@ -146,6 +152,7 @@ def play_song():
                 if path == tpath:
                     pygame.mixer.music.load(str(path))
                     pygame.mixer.music.play()
+                    song_dur = 0
                     changed_song = 0
                 else:
                     pygame.mixer.music.unpause()
@@ -154,7 +161,7 @@ def play_song():
         play.config(image=pause_img)
 
 def new_thread():
-    global changed_song, song_index, tpath, current_value, dir_changed, val
+    global changed_song, song_index, tpath, current_value, dir_changed, val, slider, song_dur
     
     for event in pygame.event.get():
         if event.type == MUSIC_END:
@@ -163,22 +170,33 @@ def new_thread():
             else:
                 if dir_changed:
                     changed_song = 1
+                    song_index = 0
                     play_song()
+                    song_dur = 0
                     dir_changed = False
                 else:
                     if l:
                         changed_song = 1
                         song_index += 1
+                        song_dur = 0
                         play_song()
                     else:
                         play.config(image=play_img)
-
+                        song_dur = 0
     
     song_mut = MP3(tpath)
     song_length = song_mut.info.length
-    current_time = pygame.mixer.music.get_pos()  / 1000
-    slider_val = (current_time / song_length) * 100
-    current_value.set(slider_val)
+    
+    if pygame.mixer.music.get_busy():
+        if song_dur <= song_length:
+            song_dur += 0.1
+        else:
+            song_dur = 0
+    else:
+        pass
+
+    slider.config(to=song_length)
+    slider.set(song_dur)
 
     root.after(100, new_thread)
 
@@ -249,6 +267,97 @@ def ahelp():
 def about():
     pass
 
+def seek():
+    global minute, second, mini_seek
+
+    mini_seek = Toplevel(root)
+    mini_seek.title("Seek")
+    mini_seek.resizable(False, False)
+    mini_seek.grab_set()
+    mini_seek.grid_rowconfigure((0,2,3), weight=1)
+    mini_seek.grid_rowconfigure((1,), weight=2)
+    mini_seek.grid_columnconfigure((0,2), weight=3)
+    mini_seek.grid_columnconfigure((1,), weight=1)
+
+    tmpvar = StringVar()
+    tmpvar.set("Seek to the duration of audio you want")
+    pygame.mixer.music.pause()
+    txt1 = Label(mini_seek, textvariable=tmpvar, font=conforta)
+    txt1.grid(row=0, column=0, columnspan=3)
+
+    song_mut = MP3(tpath)
+    song_length = song_mut.info.length
+    
+    colon = StringVar()
+    colon.set(":")
+    colon = Label(mini_seek, textvariable=colon, font=conforta)
+    colon.grid(row=1, column=1)
+
+    min_entry = Entry(mini_seek, textvariable=minute, font=conforta, width=5, borderwidth=0)
+    sec_entry = Entry(mini_seek, textvariable=second,font=conforta, width=3, borderwidth=0)
+    min_entry.grid(row=1, column=0)
+    sec_entry.grid(row=1, column=2)
+
+    song_duration = StringVar()
+    if floor(song_length % 60) < 10:
+        song_duration.set("Current song length: " + str(floor(song_length // 60)) + ":0" + str(floor(song_length % 60)))
+    else:
+        song_duration.set("Current song length: " + str(floor(song_length // 60)) + ":" + str(floor(song_length % 60)))
+    sngdur = Label(mini_seek, textvariable=song_duration, font=conforta)
+    sngdur.grid(row=2, column=0, columnspan=3)
+
+    minute.trace("w", lambda *args: limitSizeMinute(minute))
+    second.trace("w", lambda *args: nsymbol(second))
+
+    submit_btn = Button(mini_seek, text="Seek", font=conforta, borderwidth=0.5, command=seekto)
+    submit_btn.grid(row=3, column=0, columnspan=3)
+
+    mini_seek.protocol("WM_DELETE_WINDOW", destroy)
+    mini_seek.mainloop()
+
+def destroy():
+    global mini_seek
+
+    pygame.mixer.music.unpause()
+    mini_seek.destroy()
+
+def limitSizeMinute(args):
+    value = args.get()
+    if len(value) > 0:
+        for i in value:
+            if not i.isdigit():
+                l = args.get()
+                dex = l.index(i)
+                toset = l[:dex] + l[dex + 1:]
+                args.set(toset)
+        if len(value) > 3 : args.set(value[:3])
+
+def seekto():
+    global minute, second, current_value, slider, song_dur, mini_seek
+
+    song_mut = MP3(tpath)
+    song_length = song_mut.info.length
+
+    try:
+        if (int(minute.get()) * 60 + int(second.get())) > floor(song_length):
+            messagebox.showerror("Error", "Please write a value less than the duration")
+        else:
+            song_dur = floor((int(minute.get()) * 60 + int(second.get())))
+            pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
+            mini_seek.destroy()
+    except ValueError:
+        messagebox.showwarning("Warning", "Please fill all fields")
+
+def nsymbol(args):
+    if len(args.get()) > 0:
+        for i in args.get():
+            if not i.isdigit():
+                l = args.get()
+                dex = l.index(i)
+                toset = l[:dex] + l[dex + 1:]
+                args.set(toset)
+    if len(args.get()) > 2 : args.set(args.get()[:2])
+
 MUSIC_END = pygame.USEREVENT + 1
 pygame.mixer.music.set_endevent(MUSIC_END)
 
@@ -282,9 +391,7 @@ menu.add_cascade(label="File", menu=filemenu)
 
 audiomenu = Menu(menu, tearoff=0)
 audiomenu.add_command(label=ap, command=tgautoplay)
-audiomenu.add_command(label="Increase Volume", command=ivol)
-audiomenu.add_command(label="Decrease Volume", command=dvol)
-audiomenu.add_command(label="Mute", command=mvol)
+audiomenu.add_command(label="Seek in audio", command=seek)
 menu.add_cascade(label="Audio", menu=audiomenu)
 
 helpmenu = Menu(menu, tearoff=0)
