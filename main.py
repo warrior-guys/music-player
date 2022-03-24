@@ -1,6 +1,7 @@
 import os
 import pygame
 import functools
+import requests
 from tkinter import *
 from tkinter import filedialog, messagebox
 from tkinter import font as tkFont
@@ -8,16 +9,18 @@ from tkinter.ttk import Scale
 from PIL import Image, ImageTk
 from mutagen.mp3 import MP3
 from math import floor
+from bs4 import BeautifulSoup
+import webbrowser
 
 root = Tk()
 root.geometry('1280x720')
 root.title("Music Player")
-root.grid_rowconfigure((0,1,2,3,4,5), weight=1)
-root.grid_columnconfigure((0,1,2), weight=1)
-root.grid_columnconfigure((3,), weight=15)
+root.grid_rowconfigure((0,1,2,3,4), weight=2)
+root.grid_rowconfigure((5,6,7), weight=1)
+root.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), weight=1)
 root.resizable(False, False)
-root.option_add('*Dialog.msg.font', 'conforta 11')
-root.iconbitmap('appicon.ico')
+root.option_add('*Dialog.msg.font', 'Conforta 11')
+root.iconbitmap('icons/appicon.ico')
 pygame.mixer.pre_init()
 pygame.init()
 pygame.mixer.init()
@@ -34,7 +37,7 @@ listframel = Frame(root)
 listframel.grid(row=0, column=0, sticky=NSEW, rowspan=5, columnspan=3)
 listframel.configure(bg="white")
 listframer = Frame(root)
-listframer.grid(row=0, column=3, sticky=NSEW, rowspan=5)
+listframer.grid(row=0, column=3, sticky=NSEW, rowspan=5, columnspan=15)
 listframer.configure(bg="white")
 
 listframel.grid_rowconfigure((0,1,2,3,4), weight=1)
@@ -56,6 +59,9 @@ played_song = 0
 song_index = 0
 changed_song = 0
 dir_changed = False
+update_checked = False
+version_value = "v0.28.0-alpha"
+update_available = False
 
 scrollbar = Scrollbar(listframel)
 scrollbar.pack(side=RIGHT, fill=Y)
@@ -72,7 +78,7 @@ listframed.grid(row=5, column=1, sticky='NSEW')
 
 current_value = DoubleVar()
 slider = Scale(root, from_=0, to=100, orient='horizontal', variable=current_value)
-slider.grid(row=5, column=3, sticky='we')
+slider.grid(row=6, column=1, columnspan=16, sticky='we')
 
 pth = os.getcwd()
 ap = "Autoplay: On"
@@ -91,7 +97,7 @@ def browse():
     global pth, song_list, lst, listbox, dir_changed
     temp = pth
     try:
-        pth = filedialog.askdirectory(initialdir=os.getcwd(),title="Select a folder")
+        pth = filedialog.askdirectory(initialdir=os.getcwd(), title="Select a folder")
         song_list = os.listdir(pth)
         dir_changed = True
         pygame.mixer.music.stop()
@@ -161,7 +167,13 @@ def play_song():
         play.config(image=pause_img)
 
 def new_thread():
-    global changed_song, song_index, tpath, current_value, dir_changed, val, slider, song_dur
+    global changed_song, song_index, tpath, current_value, dir_changed, val, slider, song_dur, update_checked
+
+    if not update_checked:
+        check_for_updates(version_value)
+        update_checked = True
+    else:
+        pass
     
     for event in pygame.event.get():
         if event.type == MUSIC_END:
@@ -265,7 +277,50 @@ def ahelp():
     pass
 
 def about():
-    pass
+    about_window = Toplevel(root)
+    about_window.geometry('400x200')
+    about_window.resizable(False, False)
+    about_window.title("About")
+    about_window.grab_set()
+    about_window.grid_rowconfigure((0,1,2), weight=1)
+    about_window.grid_columnconfigure((0,), weight=1)
+    about_window.iconbitmap('icons/about.ico')
+    
+    version_var = StringVar()
+    version_var.set(f"Current version: {version_value}")
+
+    version_number = Label(about_window, textvariable=version_var, font=conforta)
+    version_number.grid(row=0, column=0)
+
+    update_button = Button(about_window, command=lambda: webbrowser.open(url="github.com/warrior-guys/musical-memory/releases", new=1), font=conforta)
+    update_button.grid(row=1, column=0)
+
+    temp_var = StringVar()
+    lbl1 = Label(about_window, textvariable=temp_var, font=conforta, wraplength=300)
+    lbl1.grid(row=2, column=0)
+
+    if update_available:
+        update_button.config(text="Update")
+        temp_var.set("An update was found on GitHub. Click above to go to our GitHub and download the latest release.")
+    else:
+        update_button.config(text="No updates available", state="disabled")
+        temp_var.set("No updates were found on our GitHub. The app is up-to-date.")
+
+    about_window.mainloop()
+
+def check_for_updates(version_var):
+    global update_available
+    r = requests.get('https://github.com/warrior-guys/musical-memory/blob/main/docs/version.txt')
+
+    soup = BeautifulSoup(r.content, 'html.parser')
+    blog_td = soup.findAll('td', attrs={"class":"blob-code blob-code-inner js-file-line"})
+
+    for td in blog_td:
+        if td.text == version_var:
+            update_available = False
+        else:
+            update_available = True
+            messagebox.showinfo(title="Update available", message="An update was found. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
 
 def seek():
     global minute, second, mini_seek
@@ -278,6 +333,7 @@ def seek():
     mini_seek.grid_rowconfigure((1,), weight=2)
     mini_seek.grid_columnconfigure((0,2), weight=3)
     mini_seek.grid_columnconfigure((1,), weight=1)
+    mini_seek.iconbitmap('icons/seek.ico')
 
     tmpvar = StringVar()
     tmpvar.set("Seek to the duration of audio you want")
@@ -358,24 +414,16 @@ def nsymbol(args):
                 args.set(toset)
     if len(args.get()) > 2 : args.set(args.get()[:2])
 
-
-root.bind("<space>" , lambda event : play_song() )
-root.bind("<Control-Shift-Right>" , lambda event : next_song() )
-root.bind("<Control-Shift-Left>" , lambda event : previous_song() )
-root.bind("<Control-Up>" , lambda event : ivol() )
-root.bind("<Control-Down>" , lambda event : dvol() )
-root.bind("<Control-m>" , lambda event : mvol() )
-
 MUSIC_END = pygame.USEREVENT + 1
 pygame.mixer.music.set_endevent(MUSIC_END)
 
 play = Button(root, image=play_img, command=play_song, borderwidth=0)
-play.grid(row=5, column=1)
+play.grid(row=5, column=7)
 
 previous = Button(root, image=previous_img, command=previous_song, borderwidth=0)
-previous.grid(row=5, column=0)
+previous.grid(row=5, column=5)
 nexts = Button(root, image=next_img, command=next_song, borderwidth=0)
-nexts.grid(row=5, column=2)
+nexts.grid(row=5, column=9)
 
 for i in range(len(lst)):
     lg = lst[i]
@@ -383,13 +431,13 @@ for i in range(len(lst)):
     listbox.insert(i+1, lg[:lgl - 4])
 
 vol_up = Button(root, command=ivol, borderwidth=0, image=up_img)
-vol_up.grid(row=6,column=2)
+vol_up.grid(row=7,column=8)
 
 vol_down = Button(root, command=dvol, borderwidth=0, image=down_img)
-vol_down.grid(row=6,column=1)
+vol_down.grid(row=7,column=7)
 
 vol_mute = Button(root, command=mvol, borderwidth=0, image=unmute_img)
-vol_mute.grid(row=6,column=0)
+vol_mute.grid(row=7,column=6)
 
 menu = Menu(root)
 filemenu = Menu(menu, tearoff=0)
@@ -411,5 +459,13 @@ scrollbar.config(command=listbox.yview)
 scrollbar2.config(command=listbox.xview)
 root.config(menu=menu)
 root.protocol("WM_DELETE_WINDOW", cquit)
+
+root.bind("<space>" , lambda event : play_song())
+root.bind("<Control-Shift-Right>" , lambda event : next_song())
+root.bind("<Control-Shift-Left>" , lambda event : previous_song())
+root.bind("<Control-Up>" , lambda event : ivol())
+root.bind("<Control-Down>" , lambda event : dvol())
+root.bind("<Control-m>" , lambda event : mvol())
+
 new_thread()
 root.mainloop()
