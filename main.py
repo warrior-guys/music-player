@@ -501,6 +501,8 @@ root.bind("<Control-Shift-Left>" , lambda event : previous_song())
 root.bind("<Control-Up>" , lambda event : ivol())
 root.bind("<Control-Down>" , lambda event : dvol())
 root.bind("<Control-m>" , lambda event : mvol())
+root.bind("<Ctrl_L><o>", lambda event : browse())
+root.bind("<Ctrl_L><q>", lambda event : cquit())
 
 new_thread()
 root.mainloop()
