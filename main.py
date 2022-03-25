@@ -18,7 +18,6 @@ root.title("Music Player")
 root.grid_rowconfigure((0,1,2,3,4), weight=2)
 root.grid_rowconfigure((5,6,7), weight=1)
 root.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), weight=1)
-root.resizable(False, False)
 root.option_add('*Dialog.msg.font', 'Conforta 11')
 root.iconbitmap('icons/appicon.ico')
 pygame.mixer.pre_init()
@@ -62,6 +61,7 @@ dir_changed = False
 update_checked = False
 version_value = "v0.28.0-alpha"
 update_available = False
+was_playing = False
 
 scrollbar = Scrollbar(listframel)
 scrollbar.pack(side=RIGHT, fill=Y)
@@ -85,7 +85,11 @@ ap = "Autoplay: On"
 clicked_mute = False
 l = True
 initial_vol = 1.0
-tpath = pth + "/" + lst[song_index]
+try:
+    tpath = pth + "/" + lst[song_index]
+except IndexError:
+    pass
+
 val = 0.1
 minute = StringVar()
 second = StringVar()
@@ -109,6 +113,10 @@ def browse():
     for song in song_list:
         if song.endswith(".mp3"):
             lst.append(str(song))
+    
+    if len(lst) == 0:
+        messagebox.showerror("Music not found", "Please select a directory with music.")
+
     for i in range(len(lst)):
         lg = lst[i]
         lgl = len(lg)
@@ -196,9 +204,12 @@ def new_thread():
                         play.config(image=play_img)
                         song_dur = 0
     
-    song_mut = MP3(tpath)
-    song_length = song_mut.info.length
-    
+    try:
+        song_mut = MP3(tpath)
+        song_length = song_mut.info.length
+    except NameError:
+        song_length = 1
+
     if pygame.mixer.music.get_busy():
         if song_dur <= song_length:
             song_dur += 0.1
@@ -323,7 +334,7 @@ def check_for_updates(version_var):
             messagebox.showinfo(title="Update available", message="An update was found. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
 
 def seek():
-    global minute, second, mini_seek
+    global minute, second, mini_seek, play, was_playing
 
     mini_seek = Toplevel(root)
     mini_seek.title("Seek")
@@ -337,7 +348,15 @@ def seek():
 
     tmpvar = StringVar()
     tmpvar.set("Seek to the duration of audio you want")
+
+    if pygame.mixer.music.get_busy():
+        was_playing = True
+    else:
+        was_playing = False
+
+    play.config(image=play_img)
     pygame.mixer.music.pause()
+    
     txt1 = Label(mini_seek, textvariable=tmpvar, font=conforta)
     txt1.grid(row=0, column=0, columnspan=3)
 
@@ -372,9 +391,14 @@ def seek():
     mini_seek.mainloop()
 
 def destroy():
-    global mini_seek
+    global mini_seek, was_playing
 
-    pygame.mixer.music.unpause()
+    if was_playing:
+        play.config(image=pause_img)
+        pygame.mixer.music.unpause()
+    else:
+        play.config(image=play_img)
+
     mini_seek.destroy()
 
 def limitSizeMinute(args):
@@ -399,7 +423,13 @@ def seekto():
             messagebox.showerror("Error", "Please write a value less than the duration")
         else:
             song_dur = floor((int(minute.get()) * 60 + int(second.get())))
-            pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
+            if was_playing:
+                pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
+                play.config(image=pause_img)
+            else:
+                pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
+                pygame.mixer.music.pause()
+                play.config(image=play_img)
             mini_seek.destroy()
     except ValueError:
         messagebox.showwarning("Warning", "Please fill all fields")
