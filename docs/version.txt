@@ -1,2 +1,2 @@
 v0.28.2-alpha
-Test
+https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.2-alpha
