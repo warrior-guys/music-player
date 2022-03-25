@@ -59,7 +59,7 @@ song_index = 0
 changed_song = 0
 dir_changed = False
 update_checked = False
-version_value = "v0.28.0-alpha"
+version_value = "v0.28.2-alpha"
 update_available = False
 was_playing = False
 
