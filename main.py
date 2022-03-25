@@ -59,7 +59,7 @@ song_index = 0
 changed_song = 0
 dir_changed = False
 update_checked = False
-version_value = "v0.28.2-alpha"
+version_value = "v0.29.0-alpha"
 update_available = False
 was_playing = False
 
@@ -85,6 +85,8 @@ ap = "Autoplay: On"
 clicked_mute = False
 l = True
 initial_vol = 1.0
+info = list()
+
 try:
     tpath = pth + "/" + lst[song_index]
 except IndexError:
@@ -115,7 +117,7 @@ def browse():
             lst.append(str(song))
     
     if len(lst) == 0:
-        messagebox.showerror("Music not found", "Please select a directory with music.")
+        messagebox.showerror("Music not found","Please select a directory with music.")
 
     for i in range(len(lst)):
         lg = lst[i]
@@ -303,7 +305,7 @@ def about():
     version_number = Label(about_window, textvariable=version_var, font=conforta)
     version_number.grid(row=0, column=0)
 
-    update_button = Button(about_window, command=lambda: webbrowser.open(url="github.com/warrior-guys/musical-memory/releases", new=1), font=conforta)
+    update_button = Button(about_window, command=lambda: webbrowser.open(url=info[1], new=1), font=conforta)
     update_button.grid(row=1, column=0)
 
     temp_var = StringVar()
@@ -311,7 +313,7 @@ def about():
     lbl1.grid(row=2, column=0)
 
     if update_available:
-        update_button.config(text="Update")
+        update_button.config(text="Go to update")
         temp_var.set("An update was found on GitHub. Click above to go to our GitHub and download the latest release.")
     else:
         update_button.config(text="No updates available", state="disabled")
@@ -320,18 +322,21 @@ def about():
     about_window.mainloop()
 
 def check_for_updates(version_var):
-    global update_available
+    global update_available, info
+
     r = requests.get('https://github.com/warrior-guys/musical-memory/blob/main/docs/version.txt')
 
     soup = BeautifulSoup(r.content, 'html.parser')
-    blog_td = soup.findAll('td', attrs={"class":"blob-code blob-code-inner js-file-line"})
+    gh_td = soup.findAll('td', attrs={"class":"blob-code blob-code-inner js-file-line"})
 
-    for td in blog_td:
-        if td.text == version_var:
+    for td in gh_td:
+        info.append(td.text)
+
+    if info[0] == version_var:
             update_available = False
-        else:
-            update_available = True
-            messagebox.showinfo(title="Update available", message="An update was found. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
+    else:
+        update_available = True
+        messagebox.showinfo(title="Update available", message="An update was found. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
 
 def seek():
     global minute, second, mini_seek, play, was_playing
