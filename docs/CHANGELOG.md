@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.0-alpha] - 2022-03-25
+
+### Added
+
+- Enhanced the automatic updates feature.
+- Now clicking the Update button directly takes user to the update.
+
 ## [0.28.2-alpha] (YANKED) - 2022-03-25
 
 ### Added
@@ -35,5 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
+[0.29.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.29.0-alpha
 [0.28.2-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.2-alpha
 [0.28.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.0-alpha
