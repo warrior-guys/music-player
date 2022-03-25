@@ -7,6 +7,10 @@ This is an advanced music player for one's needs, elevated from legacy players l
 ### How to install?
 You can either clone the repository into your system, or we will add a ```.exe``` & ```.deb``` file in the future when the project will be complete.
 
+### Willing to contribute?
+You can either [create a pull request](https://github.com/warrior-guys/musical-memory/pulls) or [open an issue](https://github.com/warrior-guys/musical-memory/issues) to contribute.
+> If you want to fund our organisation, you can [buy us a coffee](https://www.buymeacoffee.com/warriorguys).
+
 ### Credits to team members:
 1. [Aayush Shukla](https://github.com/AayushShukla2006)
 2. [Ritesh Kumar Karn](https://github.com/riteshkumarkarn)
