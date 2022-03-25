@@ -5,7 +5,7 @@ import requests
 from tkinter import *
 from tkinter import filedialog, messagebox
 from tkinter import font as tkFont
-from tkinter.ttk import Scale
+from tkinter.ttk import Scale, Separator
 from PIL import Image, ImageTk
 from mutagen.mp3 import MP3
 from math import floor
@@ -78,7 +78,7 @@ listframed.grid(row=5, column=1, sticky='NSEW')
 
 current_value = DoubleVar()
 slider = Scale(root, from_=0, to=100, orient='horizontal', variable=current_value)
-slider.grid(row=6, column=1, columnspan=16, sticky='we')
+slider.grid(row=6, column=1, columnspan=15, sticky='we')
 
 pth = os.getcwd()
 ap = "Autoplay: On"
@@ -117,7 +117,7 @@ def browse():
             lst.append(str(song))
     
     if len(lst) == 0:
-        messagebox.showerror("Music not found","Please select a directory with music.")
+        messagebox.showerror("Music not found", "Please select a directory with music.")
 
     for i in range(len(lst)):
         lg = lst[i]
@@ -287,30 +287,74 @@ def mvol():
         clicked_mute = True
 
 def ahelp():
-    pass
+    help_window = Toplevel(root)
+    help_window.geometry('500x500')
+    help_window.resizable(False, False)
+    help_window.title("Help")
+    help_window.grab_set()
+    help_window.grid_rowconfigure((0,1,2,3,4), weight=1)
+    help_window.grid_columnconfigure((0,), weight=1)
+    help_window.iconbitmap('icons/help.ico')
+
+    var_temp = StringVar()
+    var_temp.set("This is a simple media player! To get started:\n\n1. Select a directory with some songs.\n2. Press the play button.\n3. Boom, you know how to use the app!\n\nThe app has simple icons with functionality similar to their look, you will be easily able to do all the tasks on your own. We have provided a list of shortcuts below which you can use as per your ease of use!\n\nSpacebar : Play/Pause\nControl + Shift + Right Arrow : Next song\nControl + Shift + Back Arrow : Previous song\nControl + Up Arrow : Increase Volume\nControl + Down Arrow : Decrease Volume\n Control + M : Mute Volume\nControl + O : Browse Files\nControl + Q : Exit")
+    
+    help_label = Label(help_window, textvariable=var_temp, font=conforta, wraplength=400)
+    help_label.grid(row=0, column=0)
+
+    separator = Separator(help_window, orient='horizontal')
+    separator.grid(row=1, column=0, sticky='we')
+
+    issue_pull = StringVar()
+    issue_pull.set("Encountering any bug or issue, or want to ask for a feature? Submit them below and we will respond as quick as possible!")
+
+    issue_pull_label = Label(help_window, textvariable=issue_pull, font=conforta, wraplength=400)
+    issue_pull_label.grid(row=2, column=0)
+
+    issue_btn_text = StringVar()
+    issue_btn_text.set("Report a Bug/Issue")
+    pull_btn_text = StringVar()
+    pull_btn_text.set("Ask for a feature")
+
+    issue_btn = Button(help_window, borderwidth=0.5, textvariable=issue_btn_text, font=conforta, command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory/issues", new=1))
+    pull_btn = Button(help_window, borderwidth=0.5, textvariable=pull_btn_text, font=conforta, command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory/pulls", new=1))
+    issue_btn.grid(row=3, column=0)
+    pull_btn.grid(row=4, column=0)
 
 def about():
     about_window = Toplevel(root)
-    about_window.geometry('400x200')
+    about_window.geometry('400x400')
     about_window.resizable(False, False)
     about_window.title("About")
     about_window.grab_set()
-    about_window.grid_rowconfigure((0,1,2), weight=1)
+    about_window.grid_rowconfigure((0,1,2,3,4,5), weight=1)
     about_window.grid_columnconfigure((0,), weight=1)
     about_window.iconbitmap('icons/about.ico')
     
+    var_temp = StringVar()
+    var_temp.set("This is an advanced music player for one's needs,  with a beautiful GUI, built from scratch with Python, using Tkinter library for GUI, the OS library for file controls, the Pygame library for media controls and many other libraries.\n\nThis project's development started on 13th March, 2022 and is still going on. You can visit our GitHub for the source code by clicking below!")
+    
+    about_label = Label(about_window, textvariable=var_temp, font=conforta, wraplength=350)
+    about_label.grid(row=0, column=0)
+
+    src_btn = Button(about_window, text="Go to source code", command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory", new=1), font=conforta)
+    src_btn.grid(row=1, column=0)
+    
+    separator = Separator(about_window, orient='horizontal')
+    separator.grid(row=2, column=0, sticky='we')
+
     version_var = StringVar()
     version_var.set(f"Current version: {version_value}")
 
     version_number = Label(about_window, textvariable=version_var, font=conforta)
-    version_number.grid(row=0, column=0)
+    version_number.grid(row=3, column=0)
 
-    update_button = Button(about_window, command=lambda: webbrowser.open(url=info[1], new=1), font=conforta)
-    update_button.grid(row=1, column=0)
+    update_button = Button(about_window, borderwidth=0.5, command=lambda: webbrowser.open(url=info[1], new=1), font=conforta)
+    update_button.grid(row=4, column=0)
 
     temp_var = StringVar()
     lbl1 = Label(about_window, textvariable=temp_var, font=conforta, wraplength=300)
-    lbl1.grid(row=2, column=0)
+    lbl1.grid(row=5, column=0)
 
     if update_available:
         update_button.config(text="Go to update")
@@ -336,7 +380,7 @@ def check_for_updates(version_var):
             update_available = False
     else:
         update_available = True
-        messagebox.showinfo(title="Update available", message="An update was found. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
+        messagebox.showinfo(title="Update available", message="An update is available. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
 
 def seek():
     global minute, second, mini_seek, play, was_playing
@@ -344,6 +388,7 @@ def seek():
     mini_seek = Toplevel(root)
     mini_seek.title("Seek")
     mini_seek.resizable(False, False)
+    mini_seek.geometry('300x150')
     mini_seek.grab_set()
     mini_seek.grid_rowconfigure((0,2,3), weight=1)
     mini_seek.grid_rowconfigure((1,), weight=2)
@@ -373,8 +418,8 @@ def seek():
     colon = Label(mini_seek, textvariable=colon, font=conforta)
     colon.grid(row=1, column=1)
 
-    min_entry = Entry(mini_seek, textvariable=minute, font=conforta, width=5, borderwidth=0)
-    sec_entry = Entry(mini_seek, textvariable=second,font=conforta, width=3, borderwidth=0)
+    min_entry = Entry(mini_seek, textvariable=minute, font=conforta, width=5, borderwidth=0.5)
+    sec_entry = Entry(mini_seek, textvariable=second,font=conforta, width=3, borderwidth=0.5)
     min_entry.grid(row=1, column=0)
     sec_entry.grid(row=1, column=2)
 
@@ -425,7 +470,7 @@ def seekto():
 
     try:
         if (int(minute.get()) * 60 + int(second.get())) > floor(song_length):
-            messagebox.showerror("Error", "Please write a value less than the duration")
+            messagebox.showerror("Error", "Please type a value less than the duration")
         else:
             song_dur = floor((int(minute.get()) * 60 + int(second.get())))
             if was_playing:
@@ -438,6 +483,8 @@ def seekto():
             mini_seek.destroy()
     except ValueError:
         messagebox.showwarning("Warning", "Please fill all fields")
+    except pygame.error:
+        messagebox.showerror("Error", "Please select and play a song first.")
 
 def nsymbol(args):
     if len(args.get()) > 0:
@@ -474,21 +521,28 @@ vol_down.grid(row=7,column=7)
 vol_mute = Button(root, command=mvol, borderwidth=0, image=unmute_img)
 vol_mute.grid(row=7,column=6)
 
+browse_icon = ImageTk.PhotoImage(Image.open('icons/browse.png').resize((10,10)))
+quit_icon = ImageTk.PhotoImage(Image.open('icons/quit.png').resize((10,10)))
+seek_icon = ImageTk.PhotoImage(Image.open('icons/seek.ico').resize((10,10)))
+autoplay_icon = ImageTk.PhotoImage(Image.open('icons/autoplay.png').resize((10,10)))
+help_icon = ImageTk.PhotoImage(Image.open('icons/help.ico').resize((10,10)))
+about_icon = ImageTk.PhotoImage(Image.open('icons/about.ico').resize((10,10)))
+
 menu = Menu(root)
 filemenu = Menu(menu, tearoff=0)
-filemenu.add_command(label="Open folder", command=browse)
-filemenu.add_command(label="Quit", command=cquit)
-menu.add_cascade(label="File", menu=filemenu)
+filemenu.add_command(label="Open folder", command=browse, compound='left', image=browse_icon, font=conforta, accelerator="Ctrl+O")
+filemenu.add_command(label="Quit", command=cquit, compound='left', image=quit_icon, font=conforta, accelerator="Ctrl+Q")
+menu.add_cascade(label="File", menu=filemenu, font=conforta)
 
 audiomenu = Menu(menu, tearoff=0)
-audiomenu.add_command(label=ap, command=tgautoplay)
-audiomenu.add_command(label="Seek in audio", command=seek)
-menu.add_cascade(label="Audio", menu=audiomenu)
+audiomenu.add_command(label=ap, command=tgautoplay, compound='left', image=autoplay_icon, font=conforta, accelerator="Ctrl+P")
+audiomenu.add_command(label="Seek in audio", command=seek, compound='left', image=seek_icon, font=conforta, accelerator="Ctrl+E")
+menu.add_cascade(label="Audio", menu=audiomenu, font=conforta)
 
 helpmenu = Menu(menu, tearoff=0)
-helpmenu.add_command(label="Help", command=ahelp)
-helpmenu.add_command(label="About", command=about)
-menu.add_cascade(label="Help", menu=helpmenu)
+helpmenu.add_command(label="Help", command=ahelp, compound='left', image=help_icon, font=conforta, accelerator="Ctrl+H")
+helpmenu.add_command(label="About", command=about, compound='left', image=about_icon, font=conforta, accelerator="Ctrl+B")
+menu.add_cascade(label="Help", menu=helpmenu, font=conforta)
 
 scrollbar.config(command=listbox.yview)
 scrollbar2.config(command=listbox.xview)
@@ -500,9 +554,30 @@ root.bind("<Control-Shift-Right>" , lambda event : next_song())
 root.bind("<Control-Shift-Left>" , lambda event : previous_song())
 root.bind("<Control-Up>" , lambda event : ivol())
 root.bind("<Control-Down>" , lambda event : dvol())
+root.bind("<Control-o>", lambda event : browse())
 root.bind("<Control-m>" , lambda event : mvol())
-root.bind("<Ctrl_L><o>", lambda event : browse())
-root.bind("<Ctrl_L><q>", lambda event : cquit())
+root.bind("<Control-q>", lambda event : cquit())
+root.bind("<Control-h>", lambda event : ahelp())
+root.bind("<Control-b>", lambda event : about())
+root.bind("<Control-e>", lambda event : seek())
+root.bind("<Control-p>", lambda event : tgautoplay())
 
 new_thread()
 root.mainloop()
+
+#Attributions:
+# Pause  -> https://www.flaticon.com/free-icons/pause - Pause icons created by Good Ware
+# Play  -> https://www.flaticon.com/free-icons/play-button - Play button icons created by Freepik
+# App icon -> https://www.flaticon.com/free-icons/music - Music icons created by Freepik
+# Previous  -> https://www.flaticon.com/free-icons/next - Next icons created by srip
+# Next  -> https://www.flaticon.com/free-icons/next - Next icons created by srip
+# Volume up  -> https://www.flaticon.com/free-icons/volume-down - Volume down icons created by Freepik
+# Volume down  -> https://www.flaticon.com/free-icons/volume-down - Volume down icons created by Freepik
+# Mute  -> https://www.flaticon.com/free-icons/mute - Mute icons created by Freepik
+# Unmute  -> https://www.flaticon.com/free-icons/enable-sound - Enable sound icons created by Freepik
+# Seek  -> https://www.flaticon.com/free-icons/seeking - Seeking icons created by Freepik
+# About  -> https://www.flaticon.com/free-icons/info - Info icons created by Freepik
+# Help  -> https://www.flaticon.com/free-icons/question - Question icons created by Freepik
+# Autoplay -> https://www.flaticon.com/free-icons/autoplay - Autoplay icons created by Flat Icons
+# Quit  -> https://www.flaticon.com/free-icons/quit - Quit icons created by alkhalifi design
+# Directory -> https://www.flaticon.com/free-icons/folder - Folder icons created by Freepik
