@@ -5,14 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.29.0-alpha] - 2022-03-25
+## [v1.0.0] (MAJOR UPDATE & FIRST PRODUCTION-READY RELEASE) - 2022-03-25
+
+### Added 
+
+- All dialog boxes have now been completely made.
+- Added the necessary help needed to use the app.
+- Added buttons to directly take you to Issues and Pull requests page to submit bug reports or features.
+- Added a 'Get source code' button in the About window.
+- Added icons to all `Menu` items.
+- Added many more shortcuts, and added `accelerators` to `Menu` items to help you know about available shortcuts.
+- Fixed some grammatical errors.
+- Attributed icon authors at the end of [main.py](https://github.com/warrior-guys/musical-memory/blob/main/main.py) file.
+- The app is now production-ready, and we will just be adding new features in the next updates. (v2.0.0 will be the next major update)
+
+## [v0.29.0-alpha] - 2022-03-25
 
 ### Added
 
 - Enhanced the automatic updates feature.
 - Now clicking the Update button directly takes user to the update.
 
-## [0.28.2-alpha] (MAJOR BUG FIX) - 2022-03-25
+## [v0.28.2-alpha] (MAJOR BUG FIX) - 2022-03-25
 
 ### Added
 
@@ -20,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug causing problems in playing music when using Seek menu.
 - Made the window resizable.
 
-## [0.28.0-alpha] - 2022-03-24
+## [v0.28.0-alpha] - 2022-03-24
 
 ### First release
 
@@ -42,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
-[0.29.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.29.0-alpha
-[0.28.2-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.2-alpha
-[0.28.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.0-alpha
+[v1.0.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.0.0
+[v0.29.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.29.0-alpha
+[v0.28.2-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.2-alpha
+[v0.28.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.0-alpha
