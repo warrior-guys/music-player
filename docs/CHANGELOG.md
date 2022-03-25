@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced the automatic updates feature.
 - Now clicking the Update button directly takes user to the update.
 
-## [0.28.2-alpha] (YANKED) - 2022-03-25
+## [0.28.2-alpha] (MAJOR BUG FIX) - 2022-03-25
 
 ### Added
 
