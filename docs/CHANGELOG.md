@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.0.0] (MAJOR UPDATE & FIRST PRODUCTION-READY RELEASE) - 2022-03-25
 
-### Added 
+### First major release
 
 - All dialog boxes have now been completely made.
 - Added the necessary help needed to use the app.
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed some grammatical errors.
 - Attributed icon authors at the end of [main.py](https://github.com/warrior-guys/musical-memory/blob/main/main.py) file.
 - The app is now production-ready, and we will just be adding new features in the next updates. (v2.0.0 will be the next major update)
+- And many other minor changes.
 
 ## [v0.29.0-alpha] - 2022-03-25
 
