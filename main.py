@@ -24,13 +24,7 @@ pygame.mixer.pre_init()
 pygame.init()
 pygame.mixer.init()
 
-song_list = os.listdir(os.getcwd())
-lst = list()
 conforta = tkFont.Font(family="conforta", size=11)
-
-for song in song_list:
-    if song.endswith(".mp3"):
-        lst.append(str(song))
 
 listframel = Frame(root)
 listframel.grid(row=0, column=0, sticky=NSEW, rowspan=5, columnspan=3)
@@ -53,13 +47,14 @@ up_img = ImageTk.PhotoImage(Image.open('icons/up.png').resize((35,35)))
 down_img = ImageTk.PhotoImage(Image.open('icons/down.png').resize((35,35)))
 mute_img = ImageTk.PhotoImage(Image.open('icons/mute.png').resize((35,35)))
 unmute_img = ImageTk.PhotoImage(Image.open('icons/sound.png').resize((35,35)))
+seek_img = ImageTk.PhotoImage(Image.open('icons/right.png').resize((35,35)))
+prev_img = ImageTk.PhotoImage(Image.open('icons/left.png').resize((35,35)))
 
 played_song = 0
-song_index = 0
 changed_song = 0
 dir_changed = False
 update_checked = False
-version_value = "v0.29.0-alpha"
+version_value = "v1.1.1"
 update_available = False
 was_playing = False
 
@@ -80,12 +75,33 @@ current_value = DoubleVar()
 slider = Scale(root, from_=0, to=100, orient='horizontal', variable=current_value)
 slider.grid(row=6, column=1, columnspan=15, sticky='we')
 
-pth = os.getcwd()
+try:
+    if os.path.getsize('info.txt') > 0:
+        with open('info.txt', 'r') as f:
+            f.readline()
+            pth = f.readline()[:-1]
+            song_index = int(f.readline()[:-1])
+    else:
+            pth = os.getcwd()
+            song_index = 0
+except FileNotFoundError:
+    pth = os.getcwd()
+    song_index = 0
+
+song_list = os.listdir(pth)
+lst = list()
+
+for song in song_list:
+    if song.endswith(".mp3"):
+        lst.append(str(song))
+
 ap = "Autoplay: On"
 clicked_mute = False
 l = True
 initial_vol = 1.0
 info = list()
+song_mut = None
+song_length = 0.0
 
 try:
     tpath = pth + "/" + lst[song_index]
@@ -98,6 +114,7 @@ second = StringVar()
 song_dur = 0.0
 mini_seek = Toplevel(root)
 mini_seek.destroy()
+music_end = False
 
 def browse():
     global pth, song_list, lst, listbox, dir_changed
@@ -146,7 +163,7 @@ def fileSelection(self):
 listbox.bind("<<ListboxSelect>>", fileSelection)
 
 def play_song():
-    global played_song, changed_song, song_index, pth, tpath, song_dur
+    global played_song, changed_song, song_index, pth, tpath, song_dur, music_end
 
     tpath = pth + "/"  + lst[song_index]
 
@@ -162,7 +179,11 @@ def play_song():
             played_song = 1
         elif played_song == 1:
             if changed_song == 0:
-                pygame.mixer.music.unpause()
+                if not music_end:
+                    pygame.mixer.music.unpause()
+                else:
+                    pygame.mixer.music.play()
+                    music_end = False
             elif changed_song == 1:
                 path = pth + "/"  + lst[song_index]
                 if path == tpath:
@@ -177,7 +198,7 @@ def play_song():
         play.config(image=pause_img)
 
 def new_thread():
-    global changed_song, song_index, tpath, current_value, dir_changed, val, slider, song_dur, update_checked
+    global changed_song, song_index, tpath, current_value, dir_changed, val, slider, song_dur, update_checked, song_length, song_mut, music_end
 
     if not update_checked:
         check_for_updates(version_value)
@@ -189,6 +210,8 @@ def new_thread():
         if event.type == MUSIC_END:
             if song_index == len(lst) - 1:
                 play.config(image=play_img)
+                song_dur = 0
+                music_end = True
             else:
                 if dir_changed:
                     changed_song = 1
@@ -223,12 +246,26 @@ def new_thread():
     slider.config(to=song_length)
     slider.set(song_dur)
 
+    if song_dur + 10 >= song_length:
+        seektna.config(state="disabled")
+    else:
+        seektna.config(state="active")
+
+    if song_dur - 10 <= 0:
+        seektnb.config(state="disabled")
+    else:
+        seektnb.config(state="active")
+
     root.after(100, new_thread)
 
 def cquit():
     mb = messagebox.askyesno('QUITTING', 'Are you sure you want to quit the application?')
 
     if mb:
+        with open('info.txt', 'w') as f:
+            f.write("* WARNING * - MODIFYING THIS FILE CAN CAUSE UNEXPECTED PROBLEMS IN THE MUSIC PLAYER APP! IF YOU HAVE MISTAKENLY MODIFIED THE FILE, PLEASE CLEAR ALL CONTENTS OR DELETE THIS FILE." + '\n')
+            f.write(pth + '\n')
+            f.write(str(song_index) + '\n')
         root.destroy()
     else:
         pass
@@ -297,7 +334,7 @@ def ahelp():
     help_window.iconbitmap('icons/help.ico')
 
     var_temp = StringVar()
-    var_temp.set("This is a simple media player! To get started:\n\n1. Select a directory with some songs.\n2. Press the play button.\n3. Boom, you know how to use the app!\n\nThe app has simple icons with functionality similar to their look, you will be easily able to do all the tasks on your own. We have provided a list of shortcuts below which you can use as per your ease of use!\n\nSpacebar : Play/Pause\nControl + Shift + Right Arrow : Next song\nControl + Shift + Back Arrow : Previous song\nControl + Up Arrow : Increase Volume\nControl + Down Arrow : Decrease Volume\n Control + M : Mute Volume\nControl + O : Browse Files\nControl + Q : Exit")
+    var_temp.set("This is a simple media player! To get started:\n\n1. Select a directory with some songs.\n2. Press the play button.\n3. Boom, you know how to use the app!\n\nThe app has simple icons with functionality similar to their look, you will be easily able to do all the tasks on your own. We have provided a list of shortcuts below which you can use as per your ease of use!\n\nSpacebar : Play/Pause\nControl + Shift + Right Arrow : Next song\nControl + Shift + Back Arrow : Previous song\nControl + Period : Seek 10 seconds forward\nControl + Comma : Seek 10 seconds backward\nControl + Up Arrow : Increase Volume\nControl + Down Arrow : Decrease Volume\n Control + M : Mute Volume\nControl + O : Browse Files\nControl + Q : Exit")
     
     help_label = Label(help_window, textvariable=var_temp, font=conforta, wraplength=400)
     help_label.grid(row=0, column=0)
@@ -358,7 +395,7 @@ def about():
 
     if update_available:
         update_button.config(text="Go to update")
-        temp_var.set("An update was found on GitHub. Click above to go to our GitHub and download the latest release.")
+        temp_var.set(f"An update to version {info[0]} is available. Click above to go our GitHub and download the latest version.")
     else:
         update_button.config(text="No updates available", state="disabled")
         temp_var.set("No updates were found on our GitHub. The app is up-to-date.")
@@ -486,6 +523,40 @@ def seekto():
     except pygame.error:
         messagebox.showerror("Error", "Please select and play a song first.")
 
+def seektena():
+    global song_dur, song_length, song_mut
+
+    try:
+        if pygame.mixer.music.get_busy():
+            pygame.mixer.music.play(start=(song_dur + 10))
+            song_dur += 10
+        else:
+            pygame.mixer.music.play(start=(song_dur + 10))
+            song_dur += 10
+            pygame.mixer.music.pause()
+    except pygame.error:
+        messagebox.showerror("Error", "Please select and play a song first.")
+
+seektna = Button(root, command=seektena, image=seek_img, borderwidth=0)
+seektna.grid(row=5, column=12)
+
+def seektenb():
+    global song_dur, song_length, song_mut
+
+    try:
+        if pygame.mixer.music.get_busy():
+            pygame.mixer.music.play(start=(song_dur - 10))
+            song_dur -= 10
+        else:
+            pygame.mixer.music.play(start=(song_dur - 10))
+            song_dur -= 10
+            pygame.mixer.music.pause()
+    except pygame.error:
+        messagebox.showerror("Error", "Please select and play a song first.")
+
+seektnb = Button(root, command=seektenb, image=prev_img, borderwidth=0)
+seektnb.grid(row=5, column=2)
+
 def nsymbol(args):
     if len(args.get()) > 0:
         for i in args.get():
@@ -561,6 +632,8 @@ root.bind("<Control-h>", lambda event : ahelp())
 root.bind("<Control-b>", lambda event : about())
 root.bind("<Control-e>", lambda event : seek())
 root.bind("<Control-p>", lambda event : tgautoplay())
+root.bind("<Control-period>", lambda event : seektena())
+root.bind("<Control-comma>", lambda event : seektenb())
 
 new_thread()
 root.mainloop()
@@ -581,3 +654,5 @@ root.mainloop()
 # Autoplay -> https://www.flaticon.com/free-icons/autoplay - Autoplay icons created by Flat Icons
 # Quit  -> https://www.flaticon.com/free-icons/quit - Quit icons created by alkhalifi design
 # Directory -> https://www.flaticon.com/free-icons/folder - Folder icons created by Freepik
+# Skip 10 -> https://www.flaticon.com/free-icons/next - Next icons created by Arkinasi
+# Previous 10 -> https://www.flaticon.com/free-icons/previous - Previous icons created by Arkinasi
