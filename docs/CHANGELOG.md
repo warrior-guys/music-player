@@ -5,11 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.1] (MAJOR BUG FIX AND FEATURE ADDITION)
+
+### Bug fixes and feature additions
+
+- Fixed a major bug : If song has ended, the `Scale` doesn't reset to zero if there's only one song, and after ending in that case, the play `Button` does not work.
+- Added two new buttons with the following fucntionalities:
+    1. Two arrows pointing right : Seek 10 seconds forward
+    2. Two arrows pointing left : Seek 10 seconds backward
+- Added the respective keybindings for the above:
+    1. Control + Period (.) -> Seek 10 seconds forward
+    2. Control + Comma (,) -> Seek 10 seconds backward
+- Major feature addition : Quitting the app now saves the directory you were in and the song you were playing. When you will reopen the app the next time, it will continue from the directory and song which you played last time.
+- If an update is available, the help menu now shows the version number to which the update is available.
+
 ## [v1.0.0] (MAJOR UPDATE & FIRST PRODUCTION-READY RELEASE) - 2022-03-25
 
 ### First major release
 
-- All dialog boxes have now been completely made.
+- All dialog boxes have now been completely built.
 - Added the necessary help needed to use the app.
 - Added buttons to directly take you to Issues and Pull requests page to submit bug reports or features.
 - Added a 'Get source code' button in the About window.
@@ -17,19 +31,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added many more shortcuts, and added `accelerators` to `Menu` items to help you know about available shortcuts.
 - Fixed some grammatical errors.
 - Attributed icon authors at the end of [main.py](https://github.com/warrior-guys/musical-memory/blob/main/main.py) file.
-- The app is now production-ready, and we will just be adding new features in the next updates. (v2.0.0 will be the next major update)
 - And many other minor changes.
 
 ## [v0.29.0-alpha] - 2022-03-25
 
-### Added
+### Enhancements
 
 - Enhanced the automatic updates feature.
 - Now clicking the Update button directly takes user to the update.
 
 ## [v0.28.2-alpha] (MAJOR BUG FIX) - 2022-03-25
 
-### Added
+### Bug fixes
 
 - Fixed a major bug causing the program to crash if an empty directory is selected, or a directory with no music is selected.
 - Fixed a bug causing problems in playing music when using Seek menu.
@@ -37,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.28.0-alpha] - 2022-03-24
 
-### First release
+### First pre-release
 
 - A  `Menubar` with all the necessary actions.
 - An auto-update feature to enable automatic checking for new versions before starting the program.
@@ -57,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
+[v1.1.1]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.1.1
 [v1.0.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.0.0
 [v0.29.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.29.0-alpha
 [v0.28.2-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.28.2-alpha
