@@ -9,16 +9,11 @@ You need to clone the repository into your system.
 
 ### Libraries in use
 **You need to have the latest version of the following libraries installed on your local computer in order to run the code, otherwise it will throw unexpected errors:**
-  - [Pygame](https://github.com/pygame/pygame)
-    You can install this library by running the command `pip install pygame` in your terminal.
-  - [Requests](https://github.com/psf/requests)
-    You can install this library by running the command `pip install requests` in your terminal.
-  - [Pillow](https://github.com/python-pillow/Pillow)
-    You can install this library by running the command `pip install pillow` in your terminal.
-  - [Mutagen](https://github.com/quodlibet/mutagen)
-    You can install this library by running the command `pip install mutagen` in your terminal.
-  - [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup)
-    You can install this library by running the command `pip install beautifulsoup4` in your terminal.
+  - [Pygame](https://github.com/pygame/pygame)<br>You can install this library by running the command `pip install pygame` in your terminal.
+  - [Requests](https://github.com/psf/requests)<br>You can install this library by running the command `pip install requests` in your terminal.
+  - [Pillow](https://github.com/python-pillow/Pillow)<br>You can install this library by running the command `pip install pillow` in your terminal.
+  - [Mutagen](https://github.com/quodlibet/mutagen)<br>You can install this library by running the command `pip install mutagen` in your terminal.
+  - [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup)<br>You can install this library by running the command `pip install beautifulsoup4` in your terminal.
 
 ### Minimum system requirements
 - OS: Any operating system with Python 3.x and the required libraries installed.
