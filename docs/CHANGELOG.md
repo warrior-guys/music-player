@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.2.0] (MAJOR FEATURE ADDITIONS AND BUG FIXES)
+
+### Bug fixes and feature addtions
+
+- Added logging to the main python script. Now every action will be recorded in a 'player.log' file, and now it will be easier to search for `runtime` errors.
+- Removed a feature which was causing a major bug (not able to change songs) in the app. This feature was one of the least used, and was introduced in the first pre-release.
+- Fixed a major bug, causing peculiar behaviour of the `Scale` widget, not allowing it to move in certain scenarios, and also the songs not able to play correctly in the same event.
+- Added a label for current song duration, total song duration, current volume and current directory, which is the major addition in this release.
+
 ## [v1.1.1] (MAJOR BUG FIX AND FEATURE ADDITION)
 
 ### Bug fixes and feature additions
@@ -70,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
+[v1.2.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.1.1
 [v1.1.1]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.1.1
 [v1.0.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.0.0
 [v0.29.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.29.0-alpha
