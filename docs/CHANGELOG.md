@@ -79,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
-[v1.2.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.1.1
+[v1.2.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.2.0
 [v1.1.1]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.1.1
 [v1.0.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.0.0
 [v0.29.0-alpha]: https://github.com/warrior-guys/musical-memory/releases/tag/v0.29.0-alpha
