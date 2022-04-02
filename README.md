@@ -1,4 +1,4 @@
-# Media Player
+![Media Player Image Banner](https://github.com/warrior-guys/music-player/blob/main/icons/Media%20Player%20for%20GitHub.png)
 
 ### Description
 This is an advanced music player for one's needs, elevated from legacy players like VLC and Windows Media Player with a beautiful GUI, built from scratch with Python, using ```Tkinter``` library for GUI, the ```OS``` library for file controls and ```Pygame``` library for media controls.
