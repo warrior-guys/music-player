@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added comments on every function and hard-to-understand piece of code for better understanding what each function does.
 - Removed the Current Directory label, as it caused distortions in the GUI.
+- Restuctured the code for a better view.
 
 ## [v1.2.0] (MAJOR FEATURE ADDITIONS AND BUG FIXES)
 
