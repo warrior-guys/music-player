@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.0] (MINOR UPDATE)
+
+### Additions
+
+- Added comments on every function and hard-to-understand piece of code for better understanding what each function does.
+- Removed the Current Directory label, as it caused distortions in the GUI.
+
 ## [v1.2.0] (MAJOR FEATURE ADDITIONS AND BUG FIXES)
 
 ### Bug fixes and feature addtions
@@ -79,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
+[v1.3.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.3.0
 [v1.2.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.2.0
 [v1.1.1]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.1.1
 [v1.0.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.0.0
