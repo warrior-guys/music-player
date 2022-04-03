@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 import webbrowser
 import logging
 
+# Initializes the Tkinter window along with necessary libraries.
 root = Tk()
 root.geometry('1280x720')
 root.title("Music Player")
@@ -26,21 +27,83 @@ pygame.mixer.pre_init()
 pygame.init()
 pygame.mixer.init()
 
+# This empties the log file before starting the program, to not clutter it.
 with open('player.log', 'w') as f:
     f.write("")
 
+# Sets up the logger and it's format.
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
 formatter = logging.Formatter('%(thread)d - %(asctime)s - %(levelname)s : %(lineno)d - %(message)s')
-
 file_handler = logging.FileHandler('player.log')
 file_handler.setFormatter(formatter)
-
 logger.addHandler(file_handler)
-
-conforta = tkFont.Font(family="conforta", size=11)
 logger.warning("This file has all the logging information needed to check for bugs to the greatest extent. Avoid modifying this file.")
+
+# Define all the images needed.
+play_img = ImageTk.PhotoImage(Image.open('icons/play.png').resize((50,50)))
+pause_img = ImageTk.PhotoImage(Image.open('icons/pause.png').resize((50,50)))
+previous_img = ImageTk.PhotoImage(Image.open('icons/previous.png').resize((35,35)))
+next_img = ImageTk.PhotoImage(Image.open('icons/next.png').resize((35,35)))
+up_img = ImageTk.PhotoImage(Image.open('icons/up.png').resize((35,35)))
+down_img = ImageTk.PhotoImage(Image.open('icons/down.png').resize((35,35)))
+mute_img = ImageTk.PhotoImage(Image.open('icons/mute.png').resize((35,35)))
+unmute_img = ImageTk.PhotoImage(Image.open('icons/sound.png').resize((35,35)))
+seek_img = ImageTk.PhotoImage(Image.open('icons/right.png').resize((35,35)))
+prev_img = ImageTk.PhotoImage(Image.open('icons/left.png').resize((35,35)))
+browse_icon = ImageTk.PhotoImage(Image.open('icons/browse.png').resize((10,10)))
+quit_icon = ImageTk.PhotoImage(Image.open('icons/quit.png').resize((10,10)))
+seek_icon = ImageTk.PhotoImage(Image.open('icons/seek.ico').resize((10,10)))
+autoplay_icon = ImageTk.PhotoImage(Image.open('icons/autoplay.png').resize((10,10)))
+help_icon = ImageTk.PhotoImage(Image.open('icons/help.ico').resize((10,10)))
+about_icon = ImageTk.PhotoImage(Image.open('icons/about.ico').resize((10,10)))
+
+# Define all the pre-defined variables.
+played_song = 0
+changed_song = 0
+dir_changed = False
+update_checked = False
+version_value = "v1.3.0"
+update_available = False
+was_playing = False
+ap = "Autoplay: On"
+clicked_mute = False
+l = True
+initial_vol = 1.0
+info = []
+song_mut = None
+song_length = 0.0
+conforta = tkFont.Font(family="conforta", size=11)
+val = 0.1
+minute = StringVar()
+second = StringVar()
+song_dur = 0.0
+mini_seek = Toplevel(root)
+mini_seek.destroy()
+music_end = False
+
+MUSIC_END = pygame.USEREVENT + 1
+pygame.mixer.music.set_endevent(MUSIC_END)
+
+current_dur = StringVar()
+current_dur_label = Label(root, textvariable=current_dur, font=conforta)
+current_dur_label.grid(row=6, column=0)
+current_dur.set("00:00")
+
+total_dur = StringVar()
+total_dur_label = Label(root, textvariable=total_dur, font=conforta)
+total_dur_label.grid(row=6, column=16)
+total_dur.set("00:00")
+
+current_dir_txt = StringVar()
+current_dir_label = Label(root, textvariable=current_dir_txt, font=conforta)
+
+current_dir_txt.set(f'Current directory - {os.getcwd()}')
+
+current_volume_txt = StringVar()
+current_volume_label = Label(root, textvariable=current_volume_txt, font=conforta)
+current_volume_label.grid(row=7, column=9, columnspan=8)
+current_volume_txt.set(f'Current volume - {100}')
 
 listframel = Frame(root)
 listframel.grid(row=0, column=0, sticky=NSEW, rowspan=5, columnspan=3)
@@ -55,45 +118,6 @@ listframel.grid_columnconfigure((0,), weight=1)
 listframer.grid_rowconfigure((0,1,2,3,4), weight=1)
 listframer.grid_columnconfigure((1,), weight=1)
 
-play_img = ImageTk.PhotoImage(Image.open('icons/play.png').resize((50,50)))
-pause_img = ImageTk.PhotoImage(Image.open('icons/pause.png').resize((50,50)))
-previous_img = ImageTk.PhotoImage(Image.open('icons/previous.png').resize((35,35)))
-next_img = ImageTk.PhotoImage(Image.open('icons/next.png').resize((35,35)))
-up_img = ImageTk.PhotoImage(Image.open('icons/up.png').resize((35,35)))
-down_img = ImageTk.PhotoImage(Image.open('icons/down.png').resize((35,35)))
-mute_img = ImageTk.PhotoImage(Image.open('icons/mute.png').resize((35,35)))
-unmute_img = ImageTk.PhotoImage(Image.open('icons/sound.png').resize((35,35)))
-seek_img = ImageTk.PhotoImage(Image.open('icons/right.png').resize((35,35)))
-prev_img = ImageTk.PhotoImage(Image.open('icons/left.png').resize((35,35)))
-
-played_song = 0
-changed_song = 0
-dir_changed = False
-update_checked = False
-version_value = "v1.2.0"
-update_available = False
-was_playing = False
-
-current_dur = StringVar()
-current_dur_label = Label(root, textvariable=current_dur, font=conforta)
-current_dur_label.grid(row=6, column=0)
-current_dur.set("00:00")
-
-total_dur = StringVar()
-total_dur_label = Label(root, textvariable=total_dur, font=conforta)
-total_dur_label.grid(row=6, column=16)
-total_dur.set("00:00")
-
-current_dir_txt = StringVar()
-current_dir_label = Label(root, textvariable=current_dir_txt, font=conforta)
-current_dir_label.grid(row=7, column=0, columnspan=6)
-current_dir_txt.set(f'Current directory - {os.getcwd()}')
-
-current_volume_txt = StringVar()
-current_volume_label = Label(root, textvariable=current_volume_txt, font=conforta)
-current_volume_label.grid(row=7, column=9, columnspan=8)
-current_volume_txt.set(f'Current volume - {100}')
-
 scrollbar = Scrollbar(listframel)
 scrollbar.pack(side=RIGHT, fill=Y)
 
@@ -102,7 +126,9 @@ scrollbar2.pack(side=BOTTOM, fill=X)
 
 listbox = Listbox(listframel, xscrollcommand=scrollbar2.set, yscrollcommand=scrollbar.set, font=conforta, borderwidth=0)
 listbox.pack(fill=BOTH, expand=1)
-song_name = ""
+
+scrollbar.config(command=listbox.yview)
+scrollbar2.config(command=listbox.xview)
 
 listframed = Frame(root)
 listframed.grid(row=5, column=1, sticky='NSEW')
@@ -111,6 +137,7 @@ current_value = DoubleVar()
 slider = Scale(root, from_=0, to=100, orient='horizontal', variable=current_value)
 slider.grid(row=6, column=1, columnspan=15, sticky='we')
 
+# This reads the info.txt file, to check if previous instance was saved and if it was saved, it will load the previous instance.
 try:
     if os.path.getsize('info.txt') > 0:
         with open('info.txt', 'r') as f:
@@ -130,25 +157,11 @@ except FileNotFoundError:
 song_list = os.listdir(pth)
 lst = [str(song) for song in song_list if song.endswith(".mp3")]
 
-ap = "Autoplay: On"
-clicked_mute = False
-l = True
-initial_vol = 1.0
-info = []
-song_mut = None
-song_length = 0.0
-
 with contextlib.suppress(IndexError):
     tpath = f'{pth}/{lst[song_index]}'
     logger.debug("Initial directory loaded, no IndexError")
-val = 0.1
-minute = StringVar()
-second = StringVar()
-song_dur = 0.0
-mini_seek = Toplevel(root)
-mini_seek.destroy()
-music_end = False
 
+# This function implements when you click the browse option in Menu.
 def browse():
     global pth, song_list, lst, listbox, dir_changed
     temp = pth
@@ -179,6 +192,7 @@ def browse():
         song_list = os.listdir(pth)
         logger.exception("Cancelled select directory dialog")
 
+# This function is the toggle for autoplay.
 def tgautoplay():
     global ap, l
 
@@ -191,6 +205,7 @@ def tgautoplay():
         l = True
         logger.info("Autoplay turned on")
 
+# This function records your clicks on the list on songs.
 def fileSelection(self):
     global song_index, changed_song, pth, tpath
 
@@ -202,6 +217,7 @@ def fileSelection(self):
 
 listbox.bind("<<ListboxSelect>>", fileSelection)
 
+# This function implements when you click the play button.
 def play_song():
     global played_song, changed_song, song_index, pth, tpath, song_dur, music_end
 
@@ -210,7 +226,7 @@ def play_song():
     except IndexError:
         tpath = f'{pth}/{lst[0]}'
 
-    if pygame.mixer.music.get_busy():
+    if pygame.mixer.music.get_busy(): # If song is playing, pause it.
         pygame.mixer.music.pause()
         play.config(image=play_img)
         logger.info("Paused current song")
@@ -228,10 +244,10 @@ def play_song():
             logger.info("Played current song")
         elif played_song == 1:
             if changed_song == 0:
-                if not music_end:
+                if not music_end: # Unpause current song if it has not ended
                     pygame.mixer.music.unpause()
                     logger.info("Unpaused current song")
-                else:
+                else: # Play the same song again if it's ended and there's no song after it
                     pygame.mixer.music.play()
                     music_end = False
                     logger.info("Song ended, played same song again")
@@ -249,23 +265,28 @@ def play_song():
                 changed_song = 0
         play.config(image=pause_img)
 
-def new_thread():
+# This function implements every 0.1 seconds to check some important values, and to update the UI if needed.
+def new_thread(): 
     global changed_song, song_index, tpath, current_value, dir_changed, val, slider, song_dur, update_checked, song_length, song_mut, music_end
 
-    if not update_checked:
+    if not update_checked: # Check for updates before starting the app
         check_for_updates(version_value)
         update_checked = True
     for event in pygame.event.get():
         if event.type == MUSIC_END:
-            if song_index == len(lst) - 1:
+            if song_index == len(lst) - 1: # If on the last song, stop the music, and set next song to be played to the first song
                 play.config(image=play_img)
                 music_end = True
-            elif dir_changed:
+                pygame.mixer.music.stop()
+                song_index = 0
+            elif dir_changed: # If directory is changed, skip to the first song in the list
                 changed_song = 1
                 song_index = 0
                 play_song()
                 dir_changed = False
-            elif l:
+                pygame.mixer.music.pause()
+                play.config(image=play_img)
+            elif l: # If autoplay is on, skip to next song
                 changed_song = 1
                 song_index += 1
                 play_song()
@@ -278,24 +299,26 @@ def new_thread():
     except NameError:
         song_length = 1
 
-    if pygame.mixer.music.get_busy():
+    if pygame.mixer.music.get_busy(): # Increment the value of Scale widget by 0.1 units every 0.1 seconds while song is being played
         if song_dur <= song_length:
             song_dur += 0.1
         else:
             song_dur = 0
     slider.config(to=song_length)
 
-    if floor(song_dur % 60) < 10:
+    if floor(song_dur % 60) < 10: # Format the string which contains current duration in the form MM:SS
         current_dur.set(str(floor(song_dur // 60)) + ":0" + str(floor(song_dur % 60)))
     else:
         current_dur.set(str(floor(song_dur // 60)) + ":" + str(floor(song_dur % 60)))
 
-    if floor(song_length % 60) < 10:
+    if floor(song_length % 60) < 10: # Format the string which total duration in the form MM:SS
         total_dur.set(str(floor(song_length // 60)) + ":0" + str(floor(song_length % 60)))
     else:
         total_dur.set(str(floor(song_length // 60)) + ":" + str(floor(song_length % 60)))
+      
     slider.set(song_dur)
 
+    # Disable or enable the song increment buttons according to the place at which the Scale is
     if song_dur + 10 >= song_length:
         seektna.config(state="disabled")
     else:
@@ -308,6 +331,7 @@ def new_thread():
 
     root.after(100, new_thread)
 
+# This function displays the Yes/No dialog on the quit command, and saves the necessary info in the info.txt and player.log files.
 def cquit():
     mb = messagebox.askyesno('QUITTING', 'Are you sure you want to quit the application?')
 
@@ -319,10 +343,11 @@ def cquit():
         logger.info("Quitted the app with logging info stored in player.log")
         root.destroy()
 
+# This function gives the skip to previous song functionality.
 def previous_song():
     global changed_song, song_index, lst
 
-    if song_index == 0:
+    if song_index == 0: # If you're on the first song, show an error message.
         messagebox.showerror("Error", "This is the first song")
         logger.warning("Didn't skip to previous song, currently at first song")
     else:
@@ -332,10 +357,11 @@ def previous_song():
         play_song()
         logger.info("Skipped to previous song")
 
+# This function gives the skip to next song functionality.
 def next_song():
     global changed_song, song_index, lst
     
-    if song_index == len(lst) - 1:
+    if song_index == len(lst) - 1: # If you're on the last song, show an error message.
         messagebox.showerror("Error", "This is the last song")
         logger.warning("Didn't skip to next song, currently at last song")
     else:
@@ -345,6 +371,7 @@ def next_song():
         play_song()
         logger.info("Skipped to next song")
 
+# This function gives the functionality to increase volume.
 def ivol():
     global initial_vol
 
@@ -356,6 +383,7 @@ def ivol():
         initial_vol += 0.05
     current_volume_txt.set(f'Current volume - {ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
 
+# This function gives the functionality to decrease volume.
 def dvol():
     global initial_vol
 
@@ -367,10 +395,11 @@ def dvol():
         initial_vol -= 0.05
     current_volume_txt.set(f'Current volume - {ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
 
+# This function gives the functionality to mute the volume.
 def mvol():
     global clicked_mute, initial_vol
 
-    if clicked_mute:
+    if clicked_mute: # If mute was clicked previously, return to the last stored volume.
         pygame.mixer.music.set_volume(initial_vol)
         vol_mute.config(image=unmute_img)
         clicked_mute = False
@@ -380,6 +409,7 @@ def mvol():
         clicked_mute = True
     current_volume_txt.set(f'Current volume - {ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
 
+# This function gets called when Help menu is clicked.
 def ahelp():
     logger.info("Opened help menu")
     help_window = Toplevel(root)
@@ -418,6 +448,7 @@ def ahelp():
 
     help_window.mainloop()
 
+# This function gets called when About menu is clicked.
 def about():
     logger.info("Opened about menu")
     about_window = Toplevel(root)
@@ -455,7 +486,7 @@ def about():
     lbl1 = Label(about_window, textvariable=temp_var, font=conforta, wraplength=300)
     lbl1.grid(row=5, column=0)
 
-    if update_available:
+    if update_available: # If an update is available, activate the button.
         update_button.config(text="Go to update")
         temp_var.set(f"An update to version {info[0]} is available. Click above to go our GitHub and download the latest version.")
     else:
@@ -464,17 +495,19 @@ def about():
 
     about_window.mainloop()
 
+# This function checks for updates, and takes the current app version as a parameter.
 def check_for_updates(version_var):
     global update_available, info
 
-    r = requests.get('https://github.com/warrior-guys/musical-memory/blob/main/docs/version.txt')
+    r = requests.get('https://github.com/warrior-guys/musical-memory/blob/main/docs/version.txt') # Get the version.txt file in a HTML-type form.
 
     soup = BeautifulSoup(r.content, 'html.parser')
-    gh_td = soup.findAll('td', attrs={"class":"blob-code blob-code-inner js-file-line"})
+    gh_td = soup.findAll('td', attrs={"class":"blob-code blob-code-inner js-file-line"}) # Get the text stored in the version.txt file.
 
     for td in gh_td:
-        info.append(td.text)
+        info.append(td.text) # Add the information to list info[].
 
+    # Check if current app version matches with the version in version.txt file.
     if info[0] == version_var:
             update_available = False
             logger.info(f"No update available, current version {version_var} matches with GitHub version {info[0]}")
@@ -483,6 +516,7 @@ def check_for_updates(version_var):
         messagebox.showinfo(title="Update available", message="An update is available. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
         logger.info(f"Update available from current version {version_var} to GitHub version {info[0]}")
 
+# This function gets called when the Seek menu is clicked.
 def seek():
     global minute, second, mini_seek, play, was_playing
 
@@ -539,6 +573,7 @@ def seek():
     mini_seek.protocol("WM_DELETE_WINDOW", destroy)
     mini_seek.mainloop()
 
+# If you didn't seek to any duration, this method gets called.
 def destroy():
     global mini_seek, was_playing
 
@@ -551,6 +586,7 @@ def destroy():
     logger.info("Didn't seek, quitted seek menu")
     mini_seek.destroy()
 
+# This function regulates the text entered in the Minute entry box of Seek menu.
 def limitSizeMinute(args):
     value = args.get()
     if len(value) > 0:
@@ -562,70 +598,7 @@ def limitSizeMinute(args):
                 args.set(toset)
         if len(value) > 3 : args.set(value[:3])
 
-def seekto():
-    global minute, second, current_value, slider, song_dur, mini_seek
-
-    song_mut = MP3(tpath)
-    song_length = song_mut.info.length
-
-    try:
-        if (int(minute.get()) * 60 + int(second.get())) > floor(song_length):
-            messagebox.showerror("Error", "Please type a value less than the duration")
-            logger.warning("Seeked a value greater than current duration")
-        else:
-            song_dur = floor((int(minute.get()) * 60 + int(second.get())))
-            if was_playing:
-                pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
-                play.config(image=pause_img)
-            else:
-                pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
-                pygame.mixer.music.pause()
-                play.config(image=play_img)
-            logger.info("Seeked to a new duration")
-            mini_seek.destroy()
-    except ValueError:
-        messagebox.showwarning("Warning", "Please fill all fields")
-        logger.exception("Didn't seek, all fields not filled")
-    except pygame.error:
-        messagebox.showerror("Error", "Please select and play a song first.")
-        logger.exception("Didn't seek, no song selected")
-
-def seektena():
-    global song_dur, song_length, song_mut
-
-    try:
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.play(start=(song_dur + 10))
-            song_dur += 10
-        else:
-            pygame.mixer.music.play(start=(song_dur + 10))
-            song_dur += 10
-            pygame.mixer.music.pause()
-    except pygame.error:
-        messagebox.showerror("Error", "Please select and play a song first.")
-        logger.exception("Didn't select a song, tried to seek ten seconds after")
-
-seektna = Button(root, command=seektena, image=seek_img, borderwidth=0)
-seektna.grid(row=5, column=12)
-
-def seektenb():
-    global song_dur, song_length, song_mut
-
-    try:
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.play(start=(song_dur - 10))
-            song_dur -= 10
-        else:
-            pygame.mixer.music.play(start=(song_dur - 10))
-            song_dur -= 10
-            pygame.mixer.music.pause()
-    except pygame.error:
-        messagebox.showerror("Error", "Please select and play a song first.")
-        logger.exception("Didn't select a song, tried to seek ten seconds before")
-
-seektnb = Button(root, command=seektenb, image=prev_img, borderwidth=0)
-seektnb.grid(row=5, column=2)
-
+# This function regulates the text entered in the Seconds entry box of Seek menu.
 def nsymbol(args):
     if len(args.get()) > 0:
         for i in args.get():
@@ -636,8 +609,74 @@ def nsymbol(args):
                 args.set(toset)
     if len(args.get()) > 2 : args.set(args.get()[:2])
 
-MUSIC_END = pygame.USEREVENT + 1
-pygame.mixer.music.set_endevent(MUSIC_END)
+# This function gets called when you click Seek Button in Seek menu.
+def seekto():
+    global minute, second, current_value, slider, song_dur, mini_seek
+
+    song_mut = MP3(tpath)
+    song_length = song_mut.info.length
+
+    try:
+        if (int(minute.get()) * 60 + int(second.get())) > floor(song_length): # If you entered a value more than total duration
+            messagebox.showerror("Error", "Please type a value less than the duration")
+            logger.warning("Seeked a value greater than current duration")
+        else:
+            song_dur = floor((int(minute.get()) * 60 + int(second.get())))
+            if was_playing: # If song was already playing.
+                pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
+                play.config(image=pause_img)
+            else: # If song was paused before.
+                pygame.mixer.music.play(start=float((int(minute.get()) * 60 + int(second.get()))))
+                pygame.mixer.music.pause()
+                play.config(image=play_img)
+            logger.info("Seeked to a new duration")
+            mini_seek.destroy()
+    except ValueError: # If you did'nt fill all the fields.
+        messagebox.showwarning("Warning", "Please fill all fields")
+        logger.exception("Didn't seek, all fields not filled")
+    except pygame.error: # If you did'nt select any song, and still clicked on Seek button.
+        messagebox.showerror("Error", "Please select and play a song first.")
+        logger.exception("Didn't seek, no song selected")
+
+# This function gets called if you click on the Seek ten seconds right arrow button.
+def seektena():
+    global song_dur, song_length, song_mut
+
+    if song_dur + 10 < song_length:
+        try:
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.play(start=(song_dur + 10))
+                song_dur += 10
+            else:
+                pygame.mixer.music.play(start=(song_dur + 10))
+                song_dur += 10
+                pygame.mixer.music.pause()
+        except pygame.error:
+            messagebox.showerror("Error", "Please select and play a song first.")
+            logger.exception("Didn't select a song, tried to seek ten seconds after")
+
+# This function gets called if you click on the Seek ten seconds before right arrow button.
+def seektenb():
+    global song_dur, song_length, song_mut
+    
+    if song_dur > 10:
+        try:
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.play(start=(song_dur - 10))
+                song_dur -= 10
+            else:
+                pygame.mixer.music.play(start=(song_dur - 10))
+                song_dur -= 10
+                pygame.mixer.music.pause()
+        except pygame.error:
+            messagebox.showerror("Error", "Please select and play a song first.")
+            logger.exception("Didn't select a song, tried to seek ten seconds before")
+
+seektna = Button(root, command=seektena, image=seek_img, borderwidth=0)
+seektna.grid(row=5, column=12)
+
+seektnb = Button(root, command=seektenb, image=prev_img, borderwidth=0)
+seektnb.grid(row=5, column=2)
 
 play = Button(root, image=play_img, command=play_song, borderwidth=0)
 play.grid(row=5, column=7)
@@ -647,11 +686,6 @@ previous.grid(row=5, column=5)
 nexts = Button(root, image=next_img, command=next_song, borderwidth=0)
 nexts.grid(row=5, column=9)
 
-for i in range(len(lst)):
-    lg = lst[i]
-    lgl = len(lg)
-    listbox.insert(i+1, lg[:lgl - 4])
-
 vol_up = Button(root, command=ivol, borderwidth=0, image=up_img)
 vol_up.grid(row=7,column=8)
 
@@ -660,13 +694,6 @@ vol_down.grid(row=7,column=7)
 
 vol_mute = Button(root, command=mvol, borderwidth=0, image=unmute_img)
 vol_mute.grid(row=7,column=6)
-
-browse_icon = ImageTk.PhotoImage(Image.open('icons/browse.png').resize((10,10)))
-quit_icon = ImageTk.PhotoImage(Image.open('icons/quit.png').resize((10,10)))
-seek_icon = ImageTk.PhotoImage(Image.open('icons/seek.ico').resize((10,10)))
-autoplay_icon = ImageTk.PhotoImage(Image.open('icons/autoplay.png').resize((10,10)))
-help_icon = ImageTk.PhotoImage(Image.open('icons/help.ico').resize((10,10)))
-about_icon = ImageTk.PhotoImage(Image.open('icons/about.ico').resize((10,10)))
 
 menu = Menu(root)
 filemenu = Menu(menu, tearoff=0)
@@ -684,11 +711,12 @@ helpmenu.add_command(label="Help", command=ahelp, compound='left', image=help_ic
 helpmenu.add_command(label="About", command=about, compound='left', image=about_icon, font=conforta, accelerator="Ctrl+B")
 menu.add_cascade(label="Help", menu=helpmenu, font=conforta)
 
-scrollbar.config(command=listbox.yview)
-scrollbar2.config(command=listbox.xview)
-root.config(menu=menu)
-root.protocol("WM_DELETE_WINDOW", cquit)
+for i in range(len(lst)):
+    lg = lst[i]
+    lgl = len(lg)
+    listbox.insert(i+1, lg[:lgl - 4])
 
+# Bind functions to key-clicks.
 root.bind("<space>" , lambda event : play_song())
 root.bind("<Control-Shift-Right>" , lambda event : next_song())
 root.bind("<Control-Shift-Left>" , lambda event : previous_song())
@@ -701,8 +729,11 @@ root.bind("<Control-h>", lambda event : ahelp())
 root.bind("<Control-b>", lambda event : about())
 root.bind("<Control-e>", lambda event : seek())
 root.bind("<Control-p>", lambda event : tgautoplay())
-root.bind("<Control-period>", lambda event : seektena())
-root.bind("<Control-comma>", lambda event : seektenb())
+root.bind("<Right>", lambda event : seektena())
+root.bind("<Left>", lambda event : seektenb())
+
+root.config(menu=menu)
+root.protocol("WM_DELETE_WINDOW", cquit)
 
 new_thread()
 root.mainloop()
