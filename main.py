@@ -17,7 +17,7 @@ import logging
 # Initializes the Tkinter window along with necessary libraries.
 root = Tk()
 root.geometry('1280x720')
-root.title("Music Player")
+root.title( f'{os.getcwd()}' " - Music Player" )
 root.grid_rowconfigure((0,1,2,3,4), weight=2)
 root.grid_rowconfigure((5,6,7), weight=1)
 root.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), weight=1)
