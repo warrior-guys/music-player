@@ -1,11 +1,11 @@
 ![Music Player Image Banner](https://github.com/warrior-guys/music-player/blob/main/icons/Music%20Player%20for%20GitHub.png)
 
 ### Description
-This is an advanced music player for one's needs, elevated from legacy players like VLC and Windows Media Player with a beautiful GUI, built from scratch with Python, using ```Tkinter``` library for GUI, the ```OS``` library for file controls and ```Pygame``` library for media controls.
+This is an advanced music player for one's needs, built with with a beautiful GUI from scratch with Python, using ```Tkinter``` library for GUI, the ```OS``` library for file controls, ```Pygame``` library for media controls and many more libraries. But you don't need to care about them, just enjoy :)
 >**Currently the program only supports .mp3 files, and we are not willing to add other file extensions any soon.**
 
 ### How to install?
-You need to clone the repository into your system.
+You need to clone the repository into your system. We also have added a ```.exe``` binary file for Windows, and will soon release a ```.deb``` file to extend binary support for Linux as well.
 
 ### Libraries in use
 **You need to have the latest version of the following libraries installed on your local computer in order to run the code, otherwise it will throw unexpected errors:**
