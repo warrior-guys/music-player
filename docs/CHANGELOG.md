@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.0.0] (MAJOR UPDATE)
+
+### Additions
+
+- Added the functionality to use the app offline.
+- Adressed issue #10 - `WASAPI can't find requested audio endpoint`.
+- Fixed a bug where previously written values in `Seek` were pre-filled on opening it the next time.
+- `Pyglet` library is now used to import fonts instead of the in-built `tkFont` library.
+- The title of the song now contains the current loaded directory, as it was removed in previous update.
+- Version number is now encoded as a more understandable set of values, instead of a hardcoded value.
+- Autoplay Menu option is currently disabled due to a major bug, it will be enabled in the next minor update or patch.
+- Now on the ending of last song, the `song_index` variable sets to `0`, to enable the user to play the list of songs again, instead of repeating the last song.
+- The seek buttons now seek to next or previous five seconds instead of ten seconds as it was previously.
+- `check_for_updates()` function has been made non-parameterised as the parameter was of no use.
+- Now the version returning from GitHub file is divided into three parts `MAJOR`, `MINOR` and `PATCH` and each variable is matched independently instead of as a whole.
+- `TinyTag` library is now used to read the metadata stored in a song, and display it on `listframer` widget.
+
+### Changes in GUI
+
+- [Open Sans](https://fonts.google.com/specimen/Open+Sans) font is now used throught the app for better readability, and keeping a beautiful GUI.
+- Changed all the icons except a few to keep a monochromatic color scheme.
+- Added many labels to help display the song metadata on the `listframer` widget in the best way possible.
+- The volume label has now been shifted to the `listframer` widget as it was causing major distortions in the GUI.
+- `Menu` will now use your default system font, instead of using a custom font.
+
+### Minor changes
+
+- The sample songs have been moved to the directory ~/samples, and the code has been updated to adapt the change.
+- The Autoplay Menu option has been assigned a toggle icon which changes its on-off state on toggling autoplay.
+- Now an `Error` dialog will show if you open the app with no internet and you can use the app normally, instead of instant app crash.
+- `About` dialog will hide the `Go to update` button when you are not connected to the internet and will show a message accordingly.
+- Edited some text in `Help` dialog.
+- Changed some shortcuts in the app:
+  - Next song -> Control/Cmd + Right
+  - Previous song -> Control/Cmd + Left
+  - Up arrow -> Increase volume
+  - Down arrow -> Decrease volume
+- Attributed the new icon authors.
+
 ## [v1.3.0] (MINOR UPDATE)
 
 ### Additions
@@ -87,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
+[v2.0.0]: https://github.com/warrior-guys/music-player/releases/tag/v2.0.0
 [v1.3.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.3.0
 [v1.2.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.2.0
 [v1.1.1]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.1.1
