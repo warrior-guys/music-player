@@ -4,9 +4,9 @@
 
 | Version   | Supported          |
 | -------   | ------------------ |
-| >= 2.0.0   | ✅ |
-| < 2.0.0   | ⭕ (will soon lose support)                |
-| < 1.0.0   | :x:                |
+| v2.x.x   | ✅ |
+| v1.x.x   | :x:                |
+| v0.x.x   | :x:                |
 
 ## Reporting a Vulnerability
 
