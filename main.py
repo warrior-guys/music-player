@@ -5,7 +5,6 @@ import functools
 import requests
 from tkinter import *
 from tkinter import filedialog, messagebox
-from tkinter import font as tkFont
 from tkinter.ttk import Scale, Separator
 from PIL import Image, ImageTk
 from mutagen.mp3 import MP3
@@ -13,19 +12,17 @@ from math import floor, ceil
 from bs4 import BeautifulSoup
 import webbrowser
 import logging
+from tinytag import TinyTag
+import pyglet
 
 # Initializes the Tkinter window along with necessary libraries.
 root = Tk()
 root.geometry('1280x720')
-root.title( f'{os.getcwd()}' " - Music Player" )
+
 root.grid_rowconfigure((0,1,2,3,4), weight=2)
 root.grid_rowconfigure((5,6,7), weight=1)
 root.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), weight=1)
-root.option_add('*Dialog.msg.font', 'Conforta 11')
 root.iconbitmap('icons/appicon.ico')
-pygame.mixer.pre_init()
-pygame.init()
-pygame.mixer.init()
 
 # This empties the log file before starting the program, to not clutter it.
 with open('player.log', 'w') as f:
@@ -40,7 +37,17 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.warning("This file has all the logging information needed to check for bugs to the greatest extent. Avoid modifying this file.")
 
-# Define all the images needed.
+# This block checks if there are any errors in initializing Pygame.
+try:
+    pygame.mixer.pre_init()
+    pygame.init()
+    pygame.mixer.init()
+except pygame.error:
+    logger.exception("Failed to initialize pygame, no audio endpoints available")
+    messagebox.showerror("Error", "Failed to initialize pygame, no audio endpoints available")
+    root.destroy()
+
+# Define all the images and icons needed.
 play_img = ImageTk.PhotoImage(Image.open('icons/play.png').resize((50,50)))
 pause_img = ImageTk.PhotoImage(Image.open('icons/pause.png').resize((50,50)))
 previous_img = ImageTk.PhotoImage(Image.open('icons/previous.png').resize((35,35)))
@@ -53,17 +60,17 @@ seek_img = ImageTk.PhotoImage(Image.open('icons/right.png').resize((35,35)))
 prev_img = ImageTk.PhotoImage(Image.open('icons/left.png').resize((35,35)))
 browse_icon = ImageTk.PhotoImage(Image.open('icons/browse.png').resize((10,10)))
 quit_icon = ImageTk.PhotoImage(Image.open('icons/quit.png').resize((10,10)))
-seek_icon = ImageTk.PhotoImage(Image.open('icons/seek.ico').resize((10,10)))
-autoplay_icon = ImageTk.PhotoImage(Image.open('icons/autoplay.png').resize((10,10)))
-help_icon = ImageTk.PhotoImage(Image.open('icons/help.ico').resize((10,10)))
-about_icon = ImageTk.PhotoImage(Image.open('icons/about.ico').resize((10,10)))
+seek_icon = ImageTk.PhotoImage(Image.open('icons/new_seek.png').resize((10,10)))
+autoplay_on_icon = ImageTk.PhotoImage(Image.open('icons/on.png').resize((10,10)))
+autoplay_off_icon = ImageTk.PhotoImage(Image.open('icons/off.png').resize((10,10)))
+help_icon = ImageTk.PhotoImage(Image.open('icons/help.png').resize((10,10)))
+about_icon = ImageTk.PhotoImage(Image.open('icons/about.png').resize((10,10)))
 
 # Define all the pre-defined variables.
 played_song = 0
 changed_song = 0
 dir_changed = False
 update_checked = False
-version_value = "v1.3.0"
 update_available = False
 was_playing = False
 ap = "Autoplay: On"
@@ -73,7 +80,6 @@ initial_vol = 1.0
 info = []
 song_mut = None
 song_length = 0.0
-conforta = tkFont.Font(family="conforta", size=11)
 val = 0.1
 minute = StringVar()
 second = StringVar()
@@ -82,28 +88,36 @@ mini_seek = Toplevel(root)
 mini_seek.destroy()
 music_end = False
 
+# App version is defined here.
+MAJOR = 2
+MINOR = 0
+PATCH = 0
+__version__ = f"v{MAJOR}.{MINOR}.{PATCH}"
+
+# Define all the fonts
+pyglet.font.add_file('fonts/open_sans.ttf')
+pyglet.font.add_file('fonts/nunito.ttf')
+open_sans = ('Open Sans', 11)
+open_sans_listbox = ('Open Sans', 12)
+open_sans_big = ('Open Sans', 20)
+open_sans_big_2 = ('Open Sans', 20, 'bold')
+nunito = ('Nunito', 14, 'bold')
+
 MUSIC_END = pygame.USEREVENT + 1
 pygame.mixer.music.set_endevent(MUSIC_END)
 
 current_dur = StringVar()
-current_dur_label = Label(root, textvariable=current_dur, font=conforta)
+current_dur_label = Label(root, textvariable=current_dur, font=open_sans)
 current_dur_label.grid(row=6, column=0)
 current_dur.set("00:00")
 
 total_dur = StringVar()
-total_dur_label = Label(root, textvariable=total_dur, font=conforta)
-total_dur_label.grid(row=6, column=16)
+total_dur_label = Label(root, textvariable=total_dur, font=open_sans)
+total_dur_label.grid(row=6, column=17)
 total_dur.set("00:00")
 
-current_dir_txt = StringVar()
-current_dir_label = Label(root, textvariable=current_dir_txt, font=conforta)
-
-current_dir_txt.set(f'Current directory - {os.getcwd()}')
-
 current_volume_txt = StringVar()
-current_volume_label = Label(root, textvariable=current_volume_txt, font=conforta)
-current_volume_label.grid(row=7, column=9, columnspan=8)
-current_volume_txt.set(f'Current volume - {100}')
+current_volume_txt.set(f'{100}')
 
 listframel = Frame(root)
 listframel.grid(row=0, column=0, sticky=NSEW, rowspan=5, columnspan=3)
@@ -115,8 +129,63 @@ listframer.configure(bg="white")
 listframel.grid_rowconfigure((0,1,2,3,4), weight=1)
 listframel.grid_columnconfigure((0,), weight=1)
 
-listframer.grid_rowconfigure((0,1,2,3,4), weight=1)
-listframer.grid_columnconfigure((1,), weight=1)
+listframer.grid_rowconfigure((0,1,2,3,4,5), weight=1)
+listframer.grid_columnconfigure((0,1), weight=1)
+
+listframe = Frame(listframer, background='white')
+listframe.grid(row=5, rowspan=5, column=1)
+
+song_name_initials = StringVar()
+song_name_initials.set(f'Song Name : ')
+song_artist_initials = StringVar()
+song_artist_initials.set(f'Artist Name(s) : ')
+song_bitrate_initials = StringVar()
+song_bitrate_initials.set(f'Bitrate : ')
+song_duration_initials = StringVar()
+song_duration_initials.set(f'Duration : ')
+song_genre_initials = StringVar()
+song_genre_initials.set(f'Genre : ')
+song_volume_initials = StringVar()
+song_volume_initials.set(f'Volume : ')
+
+song_name = StringVar()
+song_name.set("")
+song_artist = StringVar()
+song_artist.set("")
+song_bitrate = StringVar()
+song_bitrate.set("")
+song_duration = StringVar()
+song_duration.set("")
+song_genre = StringVar()
+song_genre.set("")
+
+song_name_initials_label = Label(listframer, textvariable=song_name_initials, font=open_sans_big_2, background='white')
+song_artist_initials_label = Label(listframer, textvariable=song_artist_initials, font=open_sans_big_2, background='white')
+song_bitrate_initials_label = Label(listframer, textvariable=song_bitrate_initials, font=open_sans_big_2, background='white')
+song_duration_initials_label = Label(listframer, textvariable=song_duration_initials, font=open_sans_big_2, background='white')
+song_genre_initials_label = Label(listframer, textvariable=song_genre_initials, font=open_sans_big_2, background='white')
+song_volume_initials_label = Label(listframer, textvariable=song_volume_initials, font=open_sans_big_2, background='white')
+
+song_name_label = Label(listframer, textvariable=song_name, font=open_sans_big, background='white')
+song_artist_label = Label(listframer, textvariable=song_artist, font=open_sans_big, background='white')
+song_bitrate_label = Label(listframer, textvariable=song_bitrate, font=open_sans_big, background='white')
+song_duration_label = Label(listframer, textvariable=song_duration, font=open_sans_big, background='white')
+song_genre_label = Label(listframer, textvariable=song_genre, font=open_sans_big, background='white')
+song_volume_label = Label(listframer, textvariable=current_volume_txt, font=open_sans_big, background='white')
+
+song_name_initials_label.grid(row=0, column=0, sticky=E)
+song_artist_initials_label.grid(row=1, column=0, sticky=E)
+song_bitrate_initials_label.grid(row=2, column=0, sticky=E)
+song_duration_initials_label.grid(row=3, column=0, sticky=E)
+song_genre_initials_label.grid(row=4, column=0, sticky=E)
+song_volume_initials_label.grid(row=5, column=0, sticky=E)
+
+song_name_label.grid(row=0, column=1, sticky=W)
+song_artist_label.grid(row=1, column=1, sticky=W)
+song_bitrate_label.grid(row=2, column=1, sticky=W)
+song_duration_label.grid(row=3, column=1, sticky=W)
+song_genre_label.grid(row=4, column=1, sticky=W)
+song_volume_label.grid(row=5, column=1, sticky=W)
 
 scrollbar = Scrollbar(listframel)
 scrollbar.pack(side=RIGHT, fill=Y)
@@ -124,18 +193,15 @@ scrollbar.pack(side=RIGHT, fill=Y)
 scrollbar2 = Scrollbar(listframel, orient='horizontal')
 scrollbar2.pack(side=BOTTOM, fill=X)
 
-listbox = Listbox(listframel, xscrollcommand=scrollbar2.set, yscrollcommand=scrollbar.set, font=conforta, borderwidth=0)
+listbox = Listbox(listframel, xscrollcommand=scrollbar2.set, yscrollcommand=scrollbar.set, font=open_sans_listbox, borderwidth=0)
 listbox.pack(fill=BOTH, expand=1)
 
 scrollbar.config(command=listbox.yview)
 scrollbar2.config(command=listbox.xview)
 
-listframed = Frame(root)
-listframed.grid(row=5, column=1, sticky='NSEW')
-
 current_value = DoubleVar()
 slider = Scale(root, from_=0, to=100, orient='horizontal', variable=current_value)
-slider.grid(row=6, column=1, columnspan=15, sticky='we')
+slider.grid(row=6, column=1, columnspan=16, sticky='we')
 
 # This reads the info.txt file, to check if previous instance was saved and if it was saved, it will load the previous instance.
 try:
@@ -146,15 +212,16 @@ try:
             song_index = int(f.readline()[:-1])
             logger.debug("Loaded previous instance")
     else:
-            pth = os.getcwd()
+            pth = f'{os.getcwd()}/samples'
             song_index = 0
             logger.debug("Loaded a new instance")
 except FileNotFoundError:
-    pth = os.getcwd()
+    pth = f'{os.getcwd()}/samples'
     song_index = 0
     logger.exception("No file info.txt, loaded a new instance")
 
 song_list = os.listdir(pth)
+root.title(f"{pth} - Music Player")
 lst = [str(song) for song in song_list if song.endswith(".mp3")]
 
 with contextlib.suppress(IndexError):
@@ -198,10 +265,12 @@ def tgautoplay():
 
     if l:
         audiomenu.entryconfigure(0, label="Autoplay: Off")
+        audiomenu.entryconfigure(0, image=autoplay_off_icon)
         l = False
         logger.info("Autoplay turned off")
     else:
         audiomenu.entryconfigure(0, label="Autoplay: On")
+        audiomenu.entryconfigure(0, image=autoplay_on_icon)
         l = True
         logger.info("Autoplay turned on")
 
@@ -247,10 +316,10 @@ def play_song():
                 if not music_end: # Unpause current song if it has not ended
                     pygame.mixer.music.unpause()
                     logger.info("Unpaused current song")
-                else: # Play the same song again if it's ended and there's no song after it
-                    pygame.mixer.music.play()
+                else: # Play the first song if last song ended and there's no song after it
+                    pygame.mixer.music.unpause()
+                    logger.info("Last song ended, played the first song")
                     music_end = False
-                    logger.info("Song ended, played same song again")
             elif changed_song == 1:
                 path = f'{pth}/{lst[song_index]}'
                 if path == tpath:
@@ -266,19 +335,26 @@ def play_song():
         play.config(image=pause_img)
 
 # This function implements every 0.1 seconds to check some important values, and to update the UI if needed.
-def new_thread(): 
+def new_thread():
     global changed_song, song_index, tpath, current_value, dir_changed, val, slider, song_dur, update_checked, song_length, song_mut, music_end
 
     if not update_checked: # Check for updates before starting the app
-        check_for_updates(version_value)
+        try:
+            check_for_updates()
+        except requests.exceptions.ConnectionError:
+            messagebox.showerror("No internet", "Sorry, can't check for updates! You need to be connected to the internet to check for updates.")
+            logger.critical("User not connected to the internet, can't check for updates.")
         update_checked = True
     for event in pygame.event.get():
         if event.type == MUSIC_END:
             if song_index == len(lst) - 1: # If on the last song, stop the music, and set next song to be played to the first song
                 play.config(image=play_img)
                 music_end = True
-                pygame.mixer.music.stop()
                 song_index = 0
+                path = f'{pth}/{lst[song_index]}'
+                pygame.mixer.music.load(str(path))
+                pygame.mixer.music.play()
+                pygame.mixer.music.pause()
             elif dir_changed: # If directory is changed, skip to the first song in the list
                 changed_song = 1
                 song_index = 0
@@ -315,20 +391,22 @@ def new_thread():
         total_dur.set(str(floor(song_length // 60)) + ":0" + str(floor(song_length % 60)))
     else:
         total_dur.set(str(floor(song_length // 60)) + ":" + str(floor(song_length % 60)))
-      
+    
     slider.set(song_dur)
 
     # Disable or enable the song increment buttons according to the place at which the Scale is
-    if song_dur + 10 >= song_length:
+    if song_dur + 5 >= song_length:
         seektna.config(state="disabled")
     else:
         seektna.config(state="active")
 
-    if song_dur <= 10:
+    if song_dur <= 5:
         seektnb.config(state="disabled")
     else:
         seektnb.config(state="active")
 
+    plol()
+    root.title(f"{pth} - Music Player")
     root.after(100, new_thread)
 
 # This function displays the Yes/No dialog on the quit command, and saves the necessary info in the info.txt and player.log files.
@@ -381,7 +459,7 @@ def ivol():
     else:
         pygame.mixer.music.set_volume(initial_vol+0.05)
         initial_vol += 0.05
-    current_volume_txt.set(f'Current volume - {ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
+    current_volume_txt.set(f'{ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
 
 # This function gives the functionality to decrease volume.
 def dvol():
@@ -393,7 +471,7 @@ def dvol():
     else:    
         pygame.mixer.music.set_volume(initial_vol-0.05)
         initial_vol -= 0.05
-    current_volume_txt.set(f'Current volume - {ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
+    current_volume_txt.set(f'{ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
 
 # This function gives the functionality to mute the volume.
 def mvol():
@@ -407,13 +485,13 @@ def mvol():
         pygame.mixer.music.set_volume(0.0)
         vol_mute.config(image=mute_img)
         clicked_mute = True
-    current_volume_txt.set(f'Current volume - {ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
+    current_volume_txt.set(f'{ceil(round(pygame.mixer.music.get_volume() * 100, 0))}')
 
 # This function gets called when Help menu is clicked.
 def ahelp():
     logger.info("Opened help menu")
     help_window = Toplevel(root)
-    help_window.geometry('500x500')
+    help_window.geometry('400x700')
     help_window.resizable(False, False)
     help_window.title("Help")
     help_window.grab_set()
@@ -422,9 +500,9 @@ def ahelp():
     help_window.iconbitmap('icons/help.ico')
 
     var_temp = StringVar()
-    var_temp.set("This is a simple media player! To get started:\n\n1. Select a directory with some songs.\n2. Press the play button.\n3. Boom, you know how to use the app!\n\nThe app has simple icons with functionality similar to their look, you will be easily able to do all the tasks on your own. We have provided a list of shortcuts below which you can use as per your ease of use!\n\nSpacebar : Play/Pause\nControl + Shift + Right Arrow : Next song\nControl + Shift + Back Arrow : Previous song\nControl + Period : Seek 10 seconds forward\nControl + Comma : Seek 10 seconds backward\nControl + Up Arrow : Increase Volume\nControl + Down Arrow : Decrease Volume\n Control + M : Mute Volume\nControl + O : Browse Files\nControl + Q : Exit")
+    var_temp.set("This is a simple media player! To get started:\n\n1. Select a directory with some songs.\n2. Press the play button.\n3. Boom! You know how to use the app.\n\nThe app has simple icons with functionality similar to their look, you will be easily able to do all the tasks on your own. We have provided a list of shortcuts below which you can use as per your ease of use!\n\nSpacebar : Play/Pause\nControl + Right Arrow : Next song\nControl + Left Arrow : Previous song\nRight Arrow : Seek 5 seconds forward\nLeft Arrow : Seek 5 seconds backward\nUp Arrow : Increase Volume\nDown Arrow : Decrease Volume\n Control + M : Mute Volume\nControl + O : Browse a directory\nControl + Q : Quit")
     
-    help_label = Label(help_window, textvariable=var_temp, font=conforta, wraplength=400)
+    help_label = Label(help_window, textvariable=var_temp, font=open_sans, wraplength=400)
     help_label.grid(row=0, column=0)
 
     separator = Separator(help_window, orient='horizontal')
@@ -433,7 +511,7 @@ def ahelp():
     issue_pull = StringVar()
     issue_pull.set("Encountering any bug or issue, or want to ask for a feature? Submit them below and we will respond as quick as possible!")
 
-    issue_pull_label = Label(help_window, textvariable=issue_pull, font=conforta, wraplength=400)
+    issue_pull_label = Label(help_window, textvariable=issue_pull, font=open_sans, wraplength=400)
     issue_pull_label.grid(row=2, column=0)
 
     issue_btn_text = StringVar()
@@ -441,8 +519,8 @@ def ahelp():
     pull_btn_text = StringVar()
     pull_btn_text.set("Ask for a feature")
 
-    issue_btn = Button(help_window, borderwidth=0.5, textvariable=issue_btn_text, font=conforta, command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory/issues", new=1))
-    pull_btn = Button(help_window, borderwidth=0.5, textvariable=pull_btn_text, font=conforta, command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory/pulls", new=1))
+    issue_btn = Button(help_window, borderwidth=0.5, textvariable=issue_btn_text, font=open_sans, command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory/issues", new=1))
+    pull_btn = Button(help_window, borderwidth=0.5, textvariable=pull_btn_text, font=open_sans, command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory/pulls", new=1))
     issue_btn.grid(row=3, column=0)
     pull_btn.grid(row=4, column=0)
 
@@ -463,40 +541,44 @@ def about():
     var_temp = StringVar()
     var_temp.set("This is an advanced music player for one's needs,  with a beautiful GUI, built from scratch with Python, using Tkinter library for GUI, the OS library for file controls, the Pygame library for media controls and many other libraries.\n\nThis project's development started on 13th March, 2022 and is still going on. You can visit our GitHub for the source code by clicking below!")
     
-    about_label = Label(about_window, textvariable=var_temp, font=conforta, wraplength=350)
+    about_label = Label(about_window, textvariable=var_temp, font=open_sans, wraplength=350)
     about_label.grid(row=0, column=0)
 
-    src_btn = Button(about_window, text="Go to source code", command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory", new=1), font=conforta)
+    src_btn = Button(about_window, text="Go to source code", command=lambda: webbrowser.open(url="https://github.com/warrior-guys/musical-memory", new=1), font=open_sans)
     src_btn.grid(row=1, column=0)
     
     separator = Separator(about_window, orient='horizontal')
     separator.grid(row=2, column=0, sticky='we')
 
     version_var = StringVar()
-    version_var.set(f"Current version: {version_value}")
+    version_var.set(f"Current version: {__version__}")
 
-    version_number = Label(about_window, textvariable=version_var, font=conforta)
+    version_number = Label(about_window, textvariable=version_var, font=open_sans)
     version_number.grid(row=3, column=0)
 
-    update_button = Button(about_window, borderwidth=0.5, command=lambda: webbrowser.open(url=info[1], new=1), font=conforta)
-    update_button.grid(row=4, column=0)
-    logger.debug(f"Link in go to update button: {info[1]}")
-
     temp_var = StringVar()
-    lbl1 = Label(about_window, textvariable=temp_var, font=conforta, wraplength=300)
+    lbl1 = Label(about_window, textvariable=temp_var, font=open_sans, wraplength=300)
     lbl1.grid(row=5, column=0)
 
-    if update_available: # If an update is available, activate the button.
-        update_button.config(text="Go to update")
-        temp_var.set(f"An update to version {info[0]} is available. Click above to go our GitHub and download the latest version.")
-    else:
-        update_button.config(text="No updates available", state="disabled")
-        temp_var.set("No updates were found on our GitHub. The app is up-to-date.")
+    try:
+        logger.debug(f"Link in go to update button: {info[1]}")
+        update_button = Button(about_window, borderwidth=0.5, command=lambda: webbrowser.open(url=info[1], new=1), font=open_sans)
+        update_button.grid(row=4, column=0)
+
+        if update_available: # If an update is available, activate the button.
+            update_button.config(text="Go to update")
+            temp_var.set(f"An update to version {info[0]} is available. Click above to go our GitHub and download the latest version.")
+        else:
+            update_button.config(text="No updates available", state="disabled")
+            temp_var.set("No updates were found on our GitHub. The app is up-to-date.")
+    except IndexError:
+        temp_var.set("You aren't connected to a network. We can't check for updates.")
+        logger.error("User not connected to the internet, button not visible.")
 
     about_window.mainloop()
 
 # This function checks for updates, and takes the current app version as a parameter.
-def check_for_updates(version_var):
+def check_for_updates():
     global update_available, info
 
     r = requests.get('https://github.com/warrior-guys/musical-memory/blob/main/docs/version.txt') # Get the version.txt file in a HTML-type form.
@@ -508,13 +590,18 @@ def check_for_updates(version_var):
         info.append(td.text) # Add the information to list info[].
 
     # Check if current app version matches with the version in version.txt file.
-    if info[0] == version_var:
-            update_available = False
-            logger.info(f"No update available, current version {version_var} matches with GitHub version {info[0]}")
-    else:
+    __github_version__ = info[0][1:]
+    GITHUB_MAJOR_VERSION = int(__github_version__.split('.')[0])
+    GITHUB_MINOR_VERSION = int(__github_version__.split('.')[1])
+    GITHUB_PATCH_VERSION = int(__github_version__.split('.')[2])
+
+    if (MAJOR != GITHUB_MAJOR_VERSION) or (MINOR != GITHUB_MINOR_VERSION) or (PATCH != GITHUB_PATCH_VERSION):
         update_available = True
-        messagebox.showinfo(title="Update available", message="An update is available. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button to go to the update if you wish.")
-        logger.info(f"Update available from current version {version_var} to GitHub version {info[0]}")
+        logger.info(f"Update available to version {__github_version__}.")
+        messagebox.showinfo("Update available", "An update is available. To update the app - In the menu bar, go to Help -> About and click on the 'Update' button.")
+    else:
+        update_available = False
+        logger.info(f"No updates available, current version {__version__} matches with GitHub version {__github_version__}.")
 
 # This function gets called when the Seek menu is clicked.
 def seek():
@@ -531,7 +618,10 @@ def seek():
     mini_seek.grid_rowconfigure((1,), weight=2)
     mini_seek.grid_columnconfigure((0,2), weight=3)
     mini_seek.grid_columnconfigure((1,), weight=1)
-    mini_seek.iconbitmap('icons/seek.ico')
+    mini_seek.iconbitmap('icons/new_seek.ico')
+
+    minute.set("")
+    second.set("")
 
     tmpvar = StringVar()
     tmpvar.set("Seek to the duration of audio you want")
@@ -540,7 +630,7 @@ def seek():
     play.config(image=play_img)
     pygame.mixer.music.pause()
 
-    txt1 = Label(mini_seek, textvariable=tmpvar, font=conforta)
+    txt1 = Label(mini_seek, textvariable=tmpvar, font=open_sans)
     txt1.grid(row=0, column=0, columnspan=3)
 
     song_mut = MP3(tpath)
@@ -548,11 +638,11 @@ def seek():
 
     colon = StringVar()
     colon.set(":")
-    colon = Label(mini_seek, textvariable=colon, font=conforta)
+    colon = Label(mini_seek, textvariable=colon, font=open_sans)
     colon.grid(row=1, column=1)
 
-    min_entry = Entry(mini_seek, textvariable=minute, font=conforta, width=5, borderwidth=0.5)
-    sec_entry = Entry(mini_seek, textvariable=second,font=conforta, width=3, borderwidth=0.5)
+    min_entry = Entry(mini_seek, textvariable=minute, font=open_sans, width=5, borderwidth=0.5)
+    sec_entry = Entry(mini_seek, textvariable=second,font=open_sans, width=3, borderwidth=0.5)
     min_entry.grid(row=1, column=0)
     sec_entry.grid(row=1, column=2)
 
@@ -561,13 +651,13 @@ def seek():
         song_duration.set("Current song length: " + str(floor(song_length // 60)) + ":0" + str(floor(song_length % 60)))
     else:
         song_duration.set("Current song length: " + str(floor(song_length // 60)) + ":" + str(floor(song_length % 60)))
-    sngdur = Label(mini_seek, textvariable=song_duration, font=conforta)
+    sngdur = Label(mini_seek, textvariable=song_duration, font=open_sans)
     sngdur.grid(row=2, column=0, columnspan=3)
 
     minute.trace("w", lambda *args: limitSizeMinute(minute))
     second.trace("w", lambda *args: nsymbol(second))
 
-    submit_btn = Button(mini_seek, text="Seek", font=conforta, borderwidth=0.5, command=seekto)
+    submit_btn = Button(mini_seek, text="Seek", font=open_sans, borderwidth=0.5, command=seekto)
     submit_btn.grid(row=3, column=0, columnspan=3)
 
     mini_seek.protocol("WM_DELETE_WINDOW", destroy)
@@ -639,77 +729,113 @@ def seekto():
         logger.exception("Didn't seek, no song selected")
 
 # This function gets called if you click on the Seek ten seconds right arrow button.
-def seektena():
+def seenfivea():
     global song_dur, song_length, song_mut
 
-    if song_dur + 10 < song_length:
+    if song_dur + 5 < song_length:
         try:
             if pygame.mixer.music.get_busy():
-                pygame.mixer.music.play(start=(song_dur + 10))
-                song_dur += 10
+                pygame.mixer.music.play(start=(song_dur + 5))
+                song_dur += 5
             else:
-                pygame.mixer.music.play(start=(song_dur + 10))
-                song_dur += 10
+                pygame.mixer.music.play(start=(song_dur + 5))
+                song_dur += 5
                 pygame.mixer.music.pause()
         except pygame.error:
             messagebox.showerror("Error", "Please select and play a song first.")
-            logger.exception("Didn't select a song, tried to seek ten seconds after")
+            logger.exception("Didn't select a song, tried to seek five seconds after")
 
 # This function gets called if you click on the Seek ten seconds before right arrow button.
-def seektenb():
+def seekfiveb():
     global song_dur, song_length, song_mut
     
-    if song_dur > 10:
+    if song_dur > 5:
         try:
             if pygame.mixer.music.get_busy():
-                pygame.mixer.music.play(start=(song_dur - 10))
-                song_dur -= 10
+                pygame.mixer.music.play(start=(song_dur - 5))
+                song_dur -= 5
             else:
-                pygame.mixer.music.play(start=(song_dur - 10))
-                song_dur -= 10
+                pygame.mixer.music.play(start=(song_dur - 5))
+                song_dur -= 5
                 pygame.mixer.music.pause()
         except pygame.error:
             messagebox.showerror("Error", "Please select and play a song first.")
-            logger.exception("Didn't select a song, tried to seek ten seconds before")
+            logger.exception("Didn't select a song, tried to seek five seconds before")
 
-seektna = Button(root, command=seektena, image=seek_img, borderwidth=0)
-seektna.grid(row=5, column=12)
+def plol():
+    global song_name, song_artist, song_bitrate, song_duration, song_genre
 
-seektnb = Button(root, command=seektenb, image=prev_img, borderwidth=0)
-seektnb.grid(row=5, column=2)
+    try:
+        tag = TinyTag.get(f'{pth}/{lst[song_index]}')
+        if len(lst[song_index]) <= 20:
+            song_name.set(f"{lst[song_index][:-4]}")
+        else:
+            song_name.set(f"{lst[song_index][:20]}...")
+    except IndexError:
+        print(f'{pth}/{lst[0]}')
+        tag = TinyTag.get(f'{pth}/{lst[0]}')
+        if len(lst[0]) <= 20:
+            song_name.set(f"{lst[0][:-4]}")
+        else:
+            song_name.set(f"{lst[0][:20]}...")
+        logger.exception("Didn't select a song, tried to get tags")
+
+    if tag.artist != None:
+        song_artist.set(f"{tag.artist}")
+    else:
+        song_artist.set(f"Not found")
+    if tag.bitrate != None:
+        song_bitrate.set(f"{int(tag.bitrate * 8 / 1000)} MB/s")
+    else:
+        song_bitrate.set(f"Not found MB/s")
+    duration = f"{int(tag.duration // 60)} minutes and {floor(tag.duration % 60)} seconds"
+    if tag.duration != None:
+        song_duration.set(f"{duration}")
+    else:
+        song_duration.set(f"Not found")
+    if tag.genre != None:
+        song_genre.set(f"{tag.genre}")
+    else:
+        song_genre.set(f"Not found")
+
+seektna = Button(root, command=seenfivea, image=seek_img, borderwidth=0)
+seektna.grid(row=5, column=13)
+
+seektnb = Button(root, command=seekfiveb, image=prev_img, borderwidth=0)
+seektnb.grid(row=5, column=3)
 
 play = Button(root, image=play_img, command=play_song, borderwidth=0)
-play.grid(row=5, column=7)
+play.grid(row=5, column=8)
 
 previous = Button(root, image=previous_img, command=previous_song, borderwidth=0)
-previous.grid(row=5, column=5)
+previous.grid(row=5, column=6)
 nexts = Button(root, image=next_img, command=next_song, borderwidth=0)
-nexts.grid(row=5, column=9)
+nexts.grid(row=5, column=10)
 
 vol_up = Button(root, command=ivol, borderwidth=0, image=up_img)
-vol_up.grid(row=7,column=8)
+vol_up.grid(row=7,column=9)
 
 vol_down = Button(root, command=dvol, borderwidth=0, image=down_img)
-vol_down.grid(row=7,column=7)
+vol_down.grid(row=7,column=8)
 
 vol_mute = Button(root, command=mvol, borderwidth=0, image=unmute_img)
-vol_mute.grid(row=7,column=6)
+vol_mute.grid(row=7,column=7)
 
 menu = Menu(root)
 filemenu = Menu(menu, tearoff=0)
-filemenu.add_command(label="Open folder", command=browse, compound='left', image=browse_icon, font=conforta, accelerator="Ctrl+O")
-filemenu.add_command(label="Quit", command=cquit, compound='left', image=quit_icon, font=conforta, accelerator="Ctrl+Q")
-menu.add_cascade(label="File", menu=filemenu, font=conforta)
+filemenu.add_command(label="Open folder", command=browse, compound='left', image=browse_icon, accelerator="Ctrl+O")
+filemenu.add_command(label="Quit", command=cquit, compound='left', image=quit_icon, accelerator="Ctrl+Q")
+menu.add_cascade(label="File", menu=filemenu, font=open_sans)
 
 audiomenu = Menu(menu, tearoff=0)
-audiomenu.add_command(label=ap, command=tgautoplay, compound='left', image=autoplay_icon, font=conforta, accelerator="Ctrl+P")
-audiomenu.add_command(label="Seek in audio", command=seek, compound='left', image=seek_icon, font=conforta, accelerator="Ctrl+E")
-menu.add_cascade(label="Audio", menu=audiomenu, font=conforta)
+audiomenu.add_command(label=ap, command=tgautoplay, compound='left', image=autoplay_on_icon, accelerator="Ctrl+P", state=DISABLED)
+audiomenu.add_command(label="Seek in audio", command=seek, compound='left', image=seek_icon, accelerator="Ctrl+E")
+menu.add_cascade(label="Audio", menu=audiomenu, font=open_sans)
 
 helpmenu = Menu(menu, tearoff=0)
-helpmenu.add_command(label="Help", command=ahelp, compound='left', image=help_icon, font=conforta, accelerator="Ctrl+H")
-helpmenu.add_command(label="About", command=about, compound='left', image=about_icon, font=conforta, accelerator="Ctrl+B")
-menu.add_cascade(label="Help", menu=helpmenu, font=conforta)
+helpmenu.add_command(label="Help", command=ahelp, compound='left', image=help_icon, accelerator="Ctrl+H")
+helpmenu.add_command(label="About", command=about, compound='left', image=about_icon, accelerator="Ctrl+B")
+menu.add_cascade(label="Help", menu=helpmenu)
 
 for i in range(len(lst)):
     lg = lst[i]
@@ -718,10 +844,10 @@ for i in range(len(lst)):
 
 # Bind functions to key-clicks.
 root.bind("<space>" , lambda event : play_song())
-root.bind("<Control-Shift-Right>" , lambda event : next_song())
-root.bind("<Control-Shift-Left>" , lambda event : previous_song())
-root.bind("<Control-Up>" , lambda event : ivol())
-root.bind("<Control-Down>" , lambda event : dvol())
+root.bind("<Control-Right>" , lambda event : next_song())
+root.bind("<Control-Left>" , lambda event : previous_song())
+root.bind("<Up>" , lambda event : ivol())
+root.bind("<Down>" , lambda event : dvol())
 root.bind("<Control-o>", lambda event : browse())
 root.bind("<Control-m>" , lambda event : mvol())
 root.bind("<Control-q>", lambda event : cquit())
@@ -729,8 +855,8 @@ root.bind("<Control-h>", lambda event : ahelp())
 root.bind("<Control-b>", lambda event : about())
 root.bind("<Control-e>", lambda event : seek())
 root.bind("<Control-p>", lambda event : tgautoplay())
-root.bind("<Right>", lambda event : seektena())
-root.bind("<Left>", lambda event : seektenb())
+root.bind("<Right>", lambda event : seenfivea())
+root.bind("<Left>", lambda event : seekfiveb())
 
 root.config(menu=menu)
 root.protocol("WM_DELETE_WINDOW", cquit)
@@ -738,21 +864,22 @@ root.protocol("WM_DELETE_WINDOW", cquit)
 new_thread()
 root.mainloop()
 
-#Attributions:
-# Pause  -> https://www.flaticon.com/free-icons/pause - Pause icons created by Good Ware
-# Play  -> https://www.flaticon.com/free-icons/play-button - Play button icons created by Freepik
+#Attributions :
+# Play -> https://www.flaticon.com/free-icons/video - Video icons created by Freepik
+# Pause -> https://www.flaticon.com/free-icons/pause - Pause icons created by Good Ware
 # App icon -> https://www.flaticon.com/free-icons/music - Music icons created by Freepik
-# Previous  -> https://www.flaticon.com/free-icons/next - Next icons created by srip
-# Next  -> https://www.flaticon.com/free-icons/next - Next icons created by srip
-# Volume up  -> https://www.flaticon.com/free-icons/volume-down - Volume down icons created by Freepik
-# Volume down  -> https://www.flaticon.com/free-icons/volume-down - Volume down icons created by Freepik
-# Mute  -> https://www.flaticon.com/free-icons/mute - Mute icons created by Freepik
-# Unmute  -> https://www.flaticon.com/free-icons/enable-sound - Enable sound icons created by Freepik
-# Seek  -> https://www.flaticon.com/free-icons/seeking - Seeking icons created by Freepik
-# About  -> https://www.flaticon.com/free-icons/info - Info icons created by Freepik
-# Help  -> https://www.flaticon.com/free-icons/question - Question icons created by Freepik
-# Autoplay -> https://www.flaticon.com/free-icons/autoplay - Autoplay icons created by Flat Icons
-# Quit  -> https://www.flaticon.com/free-icons/quit - Quit icons created by alkhalifi design
+# Quit -> https://www.flaticon.com/free-icons/quit - Quit icons created by alkhalifi design
 # Directory -> https://www.flaticon.com/free-icons/folder - Folder icons created by Freepik
-# Skip 10 -> https://www.flaticon.com/free-icons/next - Next icons created by Arkinasi
-# Previous 10 -> https://www.flaticon.com/free-icons/previous - Previous icons created by Arkinasi
+# Skip 5 -> https://www.flaticon.com/free-icons/next - Next icons created by Arkinasi
+# Previous 5 -> https://www.flaticon.com/free-icons/previous - Previous icons created by Arkinasi
+# Seek -> https://www.flaticon.com/free-icons/search - Search icons created by Royyan Wijaya
+# Autoplay on -> https://www.flaticon.com/free-icons/button - Button icons created by Pixel perfect
+# Autoplay off -> https://www.flaticon.com/free-icons/button - Button icons created by Pixel perfect
+# Next song -> https://www.flaticon.com/free-icons/next - Next icons created by Freepik
+# Previous song -> https://www.flaticon.com/free-icons/next - Next icons created by Freepik
+# Volume down -> https://www.flaticon.com/free-icons/ui - Ui icons created by nawicon
+# Volume up -> https://www.flaticon.com/free-icons/volume - Volume icons created by nawicon
+# Mute -> https://www.flaticon.com/free-icons/ui - Ui icons created by nawicon
+# Unmute -> https://www.flaticon.com/free-icons/ui - Ui icons created by nawicon
+# Help -> https://www.flaticon.com/free-icons/question - Question icons created by Freepik
+# About -> https://www.flaticon.com/free-icons - Info icons created by Freepik
