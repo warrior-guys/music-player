@@ -1,2 +1,2 @@
 v1.3.0
-https://github.com/warrior-guys/musical-memory/releases/tag/v1.3.0
+https://github.com/warrior-guys/music-player/releases/tag/v1.3.0
