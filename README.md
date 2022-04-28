@@ -14,6 +14,8 @@ You need to clone the repository into your system. We also have added a ```.exe`
   - [Pillow](https://github.com/python-pillow/Pillow)<br>You can install this library by running the command `pip install pillow` in your terminal.
   - [Mutagen](https://github.com/quodlibet/mutagen)<br>You can install this library by running the command `pip install mutagen` in your terminal.
   - [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup)<br>You can install this library by running the command `pip install beautifulsoup4` in your terminal.
+  - [TinyTag](https://github.com/devsnd/tinytag)<br>You can install this library by running the command `pip install tinytag` in your terminal.
+  - [Pyglet](https://github.com/pyglet/pyglet)<br> You can install this library by running the command `pip install pyglet` in your terminal.
 
 ### Minimum system requirements
 - OS: Any operating system with Python 3.x and the required libraries installed.
@@ -22,7 +24,6 @@ You need to clone the repository into your system. We also have added a ```.exe`
 - RAM: At least 2GB or above, DDR3 or above
 - Permanent storage: Any storage type (SSD recommended)
   > The program needs to take and store information from the web as well as your storage, so it needs a good RPM storage device to ensure best performance, and at least 2GB of RAM to store temporary information efficiently.
-- **You need an active internet connection in order to open the app, as it checks for updates the moment you start the app.**
 
 ### Willing to contribute?
 You can either [create a pull request](https://github.com/warrior-guys/musical-memory/pulls) or [open an issue](https://github.com/warrior-guys/musical-memory/issues) to contribute.
