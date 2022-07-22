@@ -363,9 +363,14 @@ def new_thread():
                 pygame.mixer.music.pause()
                 play.config(image=play_img)
             elif l: # If autoplay is on, skip to next song
-                changed_song = 1
-                song_index += 1
-                play_song()
+                if song_index == len(lst) - 1:
+                    changed_song = 1
+                    song_index = 0
+                    play_song()
+                else:
+                    changed_song = 1
+                    song_index += 1
+                    play_song()
             else:
                 play.config(image=play_img)
             song_dur = 0
@@ -781,7 +786,10 @@ def plol():
         logger.exception("Didn't select a song, tried to get tags")
 
     if tag.artist != None:
-        song_artist.set(f"{tag.artist}")
+        if len(tag.artist) <= 20:
+            song_artist.set(f"{tag.artist}")
+        else:    
+            song_artist.set(f"{tag.artist[:20]}...")
     else:
         song_artist.set(f"Not found")
     if tag.bitrate != None:
@@ -828,7 +836,7 @@ filemenu.add_command(label="Quit", command=cquit, compound='left', image=quit_ic
 menu.add_cascade(label="File", menu=filemenu, font=open_sans)
 
 audiomenu = Menu(menu, tearoff=0)
-audiomenu.add_command(label=ap, command=tgautoplay, compound='left', image=autoplay_on_icon, accelerator="Ctrl+P", state=DISABLED)
+audiomenu.add_command(label=ap, command=tgautoplay, compound='left', image=autoplay_on_icon, accelerator="Ctrl+P")
 audiomenu.add_command(label="Seek in audio", command=seek, compound='left', image=seek_icon, accelerator="Ctrl+E")
 menu.add_cascade(label="Audio", menu=audiomenu, font=open_sans)
 
