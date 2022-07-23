@@ -24,7 +24,7 @@ root.grid_rowconfigure((5,6,7), weight=1)
 root.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), weight=1)
 root.iconbitmap('icons/appicon.ico')
 
-# This empties the log file before starting the program, to not clutter it.
+# This empties the log file before starting the program.
 with open('player.log', 'w') as f:
     f.write("")
 
@@ -65,6 +65,8 @@ autoplay_on_icon = ImageTk.PhotoImage(Image.open('icons/on.png').resize((10,10))
 autoplay_off_icon = ImageTk.PhotoImage(Image.open('icons/off.png').resize((10,10)))
 help_icon = ImageTk.PhotoImage(Image.open('icons/help.png').resize((10,10)))
 about_icon = ImageTk.PhotoImage(Image.open('icons/about.png').resize((10,10)))
+credits_icon = ImageTk.PhotoImage(Image.open('icons/copyright.png').resize((10,10)))
+attributions_icon = ImageTk.PhotoImage(Image.open('icons/page.png').resize((10,10)))
 
 # Define all the pre-defined variables.
 played_song = 0
@@ -87,21 +89,23 @@ song_dur = 0.0
 mini_seek = Toplevel(root)
 mini_seek.destroy()
 music_end = False
+teal_green = '#006D5B'
 
 # App version is defined here.
 MAJOR = 2
-MINOR = 0
-PATCH = 0
+MINOR = 1
+PATCH = 1
 __version__ = f"v{MAJOR}.{MINOR}.{PATCH}"
 
 # Define all the fonts
 pyglet.font.add_file('fonts/open_sans.ttf')
-pyglet.font.add_file('fonts/nunito.ttf')
 open_sans = ('Open Sans', 11)
 open_sans_listbox = ('Open Sans', 12)
 open_sans_big = ('Open Sans', 20)
 open_sans_big_2 = ('Open Sans', 20, 'bold')
-nunito = ('Nunito', 14, 'bold')
+open_sans_credits = ('Open Sans', 14, 'bold')
+open_sans_link = ('Open Sans', 11, 'bold', 'underline')
+open_sans_bold = ('Open Sans', 12, 'bold')
 
 MUSIC_END = pygame.USEREVENT + 1
 pygame.mixer.music.set_endevent(MUSIC_END)
@@ -806,6 +810,144 @@ def plol():
     else:
         song_genre.set(f"Not found")
 
+def credits():
+    logger.info("Opened credits screen")
+
+    credits_screen = Toplevel(root)
+    credits_screen.title("Credits")
+    credits_screen.geometry("500x350")
+    credits_screen.resizable(False, False)
+    credits_screen.grab_set()
+    credits_screen.grid_rowconfigure((0,1,2,3,4,5,6), weight=1)
+    credits_screen.grid_columnconfigure((0,1,2), weight=1)
+    credits_screen.iconbitmap('icons/copyright.ico')
+
+    credits_label = Label(credits_screen, text="Credits", font=open_sans_credits)
+    credits_label.grid(row=0, column=0, columnspan=3)
+
+    credits_temp = StringVar()
+    credits_temp.set("This project was developed and is being maintained by:\n\nAayush Shukla (GUI designer and lead developer)\nShivam Kumar (Developer for the Media Functionality)\nPrithvi Raj (Developer for the Directory Selection Functionality)")
+    credits_lbl = Label(credits_screen, textvariable=credits_temp, font=open_sans)
+    credits_lbl.grid(row=1, column=0, columnspan=3, rowspan=3)
+
+    credits_temp2 = StringVar()
+    credits_temp2.set("\nGitHub Profiles of the developers\n")
+    credits_lbl2 = Label(credits_screen, textvariable=credits_temp2, font=open_sans_credits)
+    credits_lbl2.grid(row=4, column=0, columnspan=3)
+
+    aayush_shukla = Label(credits_screen, text="Aayush Shukla", fg=teal_green, font=open_sans_link, cursor="hand2")
+    aayush_shukla.grid(row=5, column=0)
+    aayush_shukla.bind("<Button-1>", lambda event: webbrowser.open("https://github.com/AayushShukla2006"))
+
+    shivam_kumar = Label(credits_screen, text="Shivam Kumar", fg=teal_green, font=open_sans_link, cursor="hand2")
+    shivam_kumar.grid(row=5, column=1)
+    shivam_kumar.bind("<Button-1>", lambda event: webbrowser.open("https://github.com/Shiva-slbs"))
+
+    prithvi_raj = Label(credits_screen, text="Prithvi Raj", fg=teal_green, font=open_sans_link, cursor="hand2")
+    prithvi_raj.grid(row=5, column=2)
+    prithvi_raj.bind("<Button-1>", lambda event: webbrowser.open("https://github.com/PRITHVIRAJ54"))
+
+    credits_temp3 = StringVar()
+    credits_temp3.set("\nAnd special thanks to everyone\nfor their valuable feedback on the project :)\n")
+    credits_lbl3 = Label(credits_screen, textvariable=credits_temp3, font=open_sans_credits)
+    credits_lbl3.grid(row=6, column=0, columnspan=3)
+
+    credits_screen.mainloop()
+
+def attributions():
+    logger.info("Opened attributions screen")
+
+    attributions_screen = Toplevel(root)
+    attributions_screen.title("Attributions")
+    attributions_screen.geometry("550x500")
+    attributions_screen.resizable(False, False)
+    attributions_screen.grab_set()
+    attributions_screen.grid_rowconfigure((0,1,2,3,4,5,6,7,8,9), weight=1)
+    attributions_screen.grid_columnconfigure((0,1,2), weight=1)
+    attributions_screen.iconbitmap('icons/page.ico')
+
+    attributions_label = Label(attributions_screen, text="Attributions", font=open_sans_credits)
+    attributions_label.grid(row=0, column=0, columnspan=3)
+
+    freepik = Label(attributions_screen, text="Freepik", fg=teal_green, font=open_sans_link, cursor="hand2")
+    freepik.grid(row=1, column=0, padx=10)
+    freepik.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/freepik"))
+
+    icons_by_freepik = StringVar()
+    icons_by_freepik.set("Play Icon, Main App Icon, Directory Icon,\nNext song Arrow Icon, Previous song Arrow Icon,\nHelp Icon, About Icon, Credits Menu Option Icon")
+    icons_by_freepik_lbl = Label(attributions_screen, textvariable=icons_by_freepik, font=open_sans)
+    icons_by_freepik_lbl.grid(row=1, column=1, columnspan=2)
+
+    nawicon = Label(attributions_screen, text="Nawicon", fg=teal_green, font=open_sans_link, cursor="hand2")
+    nawicon.grid(row=2, column=0, padx=10)
+    nawicon.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/nawicon"))
+
+    icons_by_nawicon = StringVar()
+    icons_by_nawicon.set("Volume Up Button Icon, Volume Down Button Icon,\nMute Button Icon, Unmute Button Icon")
+    icons_by_nawicon_lbl = Label(attributions_screen, textvariable=icons_by_nawicon, font=open_sans)
+    icons_by_nawicon_lbl.grid(row=2, column=1, columnspan=2)
+
+    pixel_perfect = Label(attributions_screen, text="Pixel Perfect", fg=teal_green, font=open_sans_link, cursor="hand2")
+    pixel_perfect.grid(row=3, column=0, padx=10)
+    pixel_perfect.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/pixel-perfect"))
+
+    icons_by_pixel_perfect = StringVar()
+    icons_by_pixel_perfect.set("Autoplay On Menu Toggle Icon,\nAutoplay Off Menu Toggle Icon")
+    icons_by_pixel_perfect_lbl = Label(attributions_screen, textvariable=icons_by_pixel_perfect, font=open_sans)
+    icons_by_pixel_perfect_lbl.grid(row=3, column=1, columnspan=2)
+
+    arkinasi = Label(attributions_screen, text="Arkinasi", fg=teal_green, font=open_sans_link, cursor="hand2")
+    arkinasi.grid(row=4, column=0, padx=10)
+    arkinasi.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/arkinasi"))
+
+    icons_by_arkinasi = StringVar()
+    icons_by_arkinasi.set("Next 5 seconds Button Icon,\nPrevious 5 seconds Button Icon")
+    icons_by_arkinasi_lbl = Label(attributions_screen, textvariable=icons_by_arkinasi, font=open_sans)
+    icons_by_arkinasi_lbl.grid(row=4, column=1, columnspan=2)
+
+    goodware = Label(attributions_screen, text="Goodware", fg=teal_green, font=open_sans_link, cursor="hand2")
+    goodware.grid(row=5, column=0, padx=10)
+    goodware.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/good-ware"))
+
+    icons_by_goodware = StringVar()
+    icons_by_goodware.set("Pause Button Icon")
+    icons_by_goodware_lbl = Label(attributions_screen, textvariable=icons_by_goodware, font=open_sans)
+    icons_by_goodware_lbl.grid(row=5, column=1, columnspan=2)
+
+    wijaya = Label(attributions_screen, text="Royyan Wijaya", fg=teal_green, font=open_sans_link, cursor="hand2")
+    wijaya.grid(row=6, column=0, padx=10)
+    wijaya.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/royyan-wijaya"))
+
+    icons_by_wijaya = StringVar()
+    icons_by_wijaya.set("Seek Menu and Window Icon")
+    icons_by_wijaya_lbl = Label(attributions_screen, textvariable=icons_by_wijaya, font=open_sans)
+    icons_by_wijaya_lbl.grid(row=6, column=1, columnspan=2)
+
+    icongeek26 = Label(attributions_screen, text="Icongeek26", fg=teal_green, font=open_sans_link, cursor="hand2")
+    icongeek26.grid(row=7, column=0, padx=10)
+    icongeek26.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/icongeek26"))
+
+    icons_by_icongeek26 = StringVar()
+    icons_by_icongeek26.set("Attributions Menu Option Icon")
+    icons_by_icongeek26_lbl = Label(attributions_screen, textvariable=icons_by_icongeek26, font=open_sans)
+    icons_by_icongeek26_lbl.grid(row=7, column=1, columnspan=2)
+
+    alkhalifi_design = Label(attributions_screen, text="Alkhalifi Design", fg=teal_green, font=open_sans_link, cursor="hand2")
+    alkhalifi_design.grid(row=8, column=0, padx=10)
+    alkhalifi_design.bind("<Button-1>", lambda event: webbrowser.open("https://www.flaticon.com/authors/alkhalifi-design"))
+
+    icons_by_alkhalifi_design = StringVar()
+    icons_by_alkhalifi_design.set("Quit Menu Icon")
+    icons_by_alkhalifi_design_lbl = Label(attributions_screen, textvariable=icons_by_alkhalifi_design, font=open_sans)
+    icons_by_alkhalifi_design_lbl.grid(row=8, column=1, columnspan=2)
+
+    final_thanks = StringVar()
+    final_thanks.set("\nSpecial thanks to the developers on StackOverflow\nand programming blogs for their help and support\nthroughout the project.\n")
+    final_thanks_lbl = Label(attributions_screen, textvariable=final_thanks, font=open_sans_bold)
+    final_thanks_lbl.grid(row=9, column=0, columnspan=3)
+
+    attributions_screen.mainloop()
+
 seektna = Button(root, command=seenfivea, image=seek_img, borderwidth=0)
 seektna.grid(row=5, column=13)
 
@@ -845,6 +987,11 @@ helpmenu.add_command(label="Help", command=ahelp, compound='left', image=help_ic
 helpmenu.add_command(label="About", command=about, compound='left', image=about_icon, accelerator="Ctrl+B")
 menu.add_cascade(label="Help", menu=helpmenu)
 
+creditsmenu = Menu(menu, tearoff=0)
+creditsmenu.add_command(label="Credits", command=credits, compound='left', image=credits_icon)
+creditsmenu.add_command(label="Attributions", command=attributions, compound='left', image=attributions_icon)
+menu.add_cascade(label="Credits", menu=creditsmenu)
+
 for i in range(len(lst)):
     lg = lst[i]
     lgl = len(lg)
@@ -871,23 +1018,3 @@ root.protocol("WM_DELETE_WINDOW", cquit)
 
 new_thread()
 root.mainloop()
-
-#Attributions :
-# Play -> https://www.flaticon.com/free-icons/video - Video icons created by Freepik
-# Pause -> https://www.flaticon.com/free-icons/pause - Pause icons created by Good Ware
-# App icon -> https://www.flaticon.com/free-icons/music - Music icons created by Freepik
-# Quit -> https://www.flaticon.com/free-icons/quit - Quit icons created by alkhalifi design
-# Directory -> https://www.flaticon.com/free-icons/folder - Folder icons created by Freepik
-# Skip 5 -> https://www.flaticon.com/free-icons/next - Next icons created by Arkinasi
-# Previous 5 -> https://www.flaticon.com/free-icons/previous - Previous icons created by Arkinasi
-# Seek -> https://www.flaticon.com/free-icons/search - Search icons created by Royyan Wijaya
-# Autoplay on -> https://www.flaticon.com/free-icons/button - Button icons created by Pixel perfect
-# Autoplay off -> https://www.flaticon.com/free-icons/button - Button icons created by Pixel perfect
-# Next song -> https://www.flaticon.com/free-icons/next - Next icons created by Freepik
-# Previous song -> https://www.flaticon.com/free-icons/next - Next icons created by Freepik
-# Volume down -> https://www.flaticon.com/free-icons/ui - Ui icons created by nawicon
-# Volume up -> https://www.flaticon.com/free-icons/volume - Volume icons created by nawicon
-# Mute -> https://www.flaticon.com/free-icons/ui - Ui icons created by nawicon
-# Unmute -> https://www.flaticon.com/free-icons/ui - Ui icons created by nawicon
-# Help -> https://www.flaticon.com/free-icons/question - Question icons created by Freepik
-# About -> https://www.flaticon.com/free-icons - Info icons created by Freepik
