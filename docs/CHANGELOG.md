@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Additions
 
+- Autoplay option has been enabled after fixing the issue it caused.
+- Fixed a major distorition in the GUI due to Artist name length not being moderated.
 - A new cascade has been made for two Menus - Credits and Attributions.
 - The credits window features the following:
   - Name and assigned task of the developers of the project.
