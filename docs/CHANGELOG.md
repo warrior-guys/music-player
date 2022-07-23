@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.1.1] (MINOR UPDATE + PATCH)
+
+### Additions
+
+- A new cascade has been made for two Menus - Credits and Attributions.
+- The credits window features the following:
+  - Name and assigned task of the developers of the project.
+  - Links to their GitHub profiles.
+  - Special thanks
+- The attributions window features the follwing:
+  - All of the icon authors with respective links to their works.
+  - Special thanks
+
+### Changes in GUI
+
+- Three new font styles have been added to make the GUI more consistent.
+- Icons have been added for the new `Credits` and `Attributions` windows.
+- For hyperlinks in the app, a new color `Teal Green` has been added with a `HEX` value of `006D5B`.
+
+### Minor Changes
+
+- Unused font `Nunito` has been removed from the app files completely.
+- Attributions in form of comments have been removed from the end of `main.py` file.
+
+### Known issues (will not be fixed being rare)
+
+- On clicking on any song in the `Listbox` in the `listframel` widget, the keyboard shortcuts cease to operate.
+- There are very little distortions in the GUI on some rare occasions.
+
 ## [v2.0.0] (MAJOR UPDATE)
 
 ### Additions
@@ -126,6 +155,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Beautiful GUI with royalty-free icons for every window, and every button provided by [Flaticon](https://www.flaticon.com), and the authors attributed therein.
 - Mini-windows to enable every action from the `Menubar`.
 
+[v2.1.1]: https://github.com/warrior-guys/music-player/releases/tag/v2.1.1
 [v2.0.0]: https://github.com/warrior-guys/music-player/releases/tag/v2.0.0
 [v1.3.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.3.0
 [v1.2.0]: https://github.com/warrior-guys/musical-memory/releases/tag/v1.2.0
