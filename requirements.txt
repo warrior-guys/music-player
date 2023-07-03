@@ -1,0 +1,7 @@
+python
+requests
+pillow
+mutagen
+bs4
+tinytag
+pyglet
