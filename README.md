@@ -17,6 +17,8 @@ You need to clone the repository into your system. We have added a ```.exe``` bi
   - [TinyTag](https://github.com/devsnd/tinytag)<br>You can install this library by running the command `pip install tinytag` in your terminal.
   - [Pyglet](https://github.com/pyglet/pyglet)<br> You can install this library by running the command `pip install pyglet` in your terminal.
 
+  > You can download these by running the command `pip install -r requirements.txt`. This command will download all the required libraries.
+
 ### Minimum system requirements
 - OS: Any operating system with Python 3.x and the required libraries installed.
 - Processor: Any **dual-core** processor.
